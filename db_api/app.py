@@ -65,9 +65,9 @@ def create_app(test_config=None):
             return render_markdown('README.md')
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
-    @app.route('/api/predict/', methods=['GET'])
+    @app.route('/api/query/', methods=['GET'])
     @cache.cached(timeout=10)  # Agressive cache timeout.
-    def predict():
+    def query():
         # Set Defaults
         defaults = None
         # Parse request
@@ -78,15 +78,13 @@ def create_app(test_config=None):
         # Check for hard-coded defaults.  Suggest loading defaults via function/env
         #   to activate/deactivate static response testing.
         if defaults is not None:
-            model_input = defaults
+            search_request = defaults
         else:
-            model_input = request.args['search']
-        # Send search request to model
-        raw_prediction = predictor.predict(model_input)
-        # Query database with those raw model output (if necessary)
-        prediction_data = db.query_database(raw_prediction)
+            search_request = request.args['search']
+        # Send search request to query generator, db handler
+        query = NotImplemented
 
-        return prediction_data
+        return NotImplemented
 
     #############
     ###Logging###
