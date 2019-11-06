@@ -372,6 +372,3 @@ if __name__ == "__main__":
 
     # for bucket in response['Buckets']:
     #     print(f'    {bucket["Name"]}')
-
-    bucket = Bucket(bucket_name="yelp-data-labs18")
-    print(bucket.get('yelp_json/photo.json'))
