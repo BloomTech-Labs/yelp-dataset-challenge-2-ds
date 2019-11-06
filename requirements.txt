@@ -1,0 +1,17 @@
+beautifulsoup4
+bokeh
+boto3
+dask
+distributed
+Faker
+joblib
+matplotlib
+numpy
+pandas
+Pillow
+pylint
+requests
+scikit-learn
+scipy
+ujson
+jupyter
