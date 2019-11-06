@@ -8,7 +8,9 @@ matplotlib
 numpy
 pandas
 Pillow
+pyarrow
 pylint
+python-decouple
 requests
 scikit-learn
 scipy
