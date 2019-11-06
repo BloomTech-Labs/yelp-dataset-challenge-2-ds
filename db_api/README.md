@@ -1,12 +1,10 @@
-# flask_ml_general
+# Yelp Database API
 
-A deployable flask application tailored for production machine learning.  Contains drop-in model loading, logging pre-configured, and other useful features.  This is not meant to be a REST API and includes no data security or auth.  This is meant to be a lightweight deployable API to drop a model in and get connected to a front-end or dashboard quickly with regular, reliable, JSON responses.
+This is the database management system for the Yelp Dataset Challenge. All GET, PUT, POST, DELETE requests are routed through this application to the database.  Query can be done via simple search or supplied JSON schema per feature needs.
 
 **Features** include:
 
 * Databaes connection manager
-
-* Machine Learning Model loader and factory methods
 
 * Caching
 
@@ -26,7 +24,7 @@ A deployable flask application tailored for production machine learning.  Contai
 
 *Version Information*
 
-> 2019-10-30 - 1.0 Release
+> 2019-11-06 - 0.1 Pre-Release
 
 ## Notes
 
