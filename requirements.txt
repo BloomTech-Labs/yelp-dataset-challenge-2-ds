@@ -1,5 +1,4 @@
 beautifulsoup4
-bokeh
 boto3
 dask
 distributed

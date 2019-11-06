@@ -364,6 +364,7 @@ def get_matching_s3_keys(bucket, prefix="", suffix=""):
 
 
 if __name__ == "__main__":
+    pass
     # credential_file = os.path.join(os.getcwd(), '.aws') + '/credentials'
     # load_aws_environment(credential_file=credential_file)
 
