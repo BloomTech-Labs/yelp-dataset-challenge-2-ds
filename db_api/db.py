@@ -24,7 +24,7 @@ def get_db():
     if 'db' not in g:
         db_logger.info('DB connection not found. Attempting connection.')
         try:
-            engine = create_engine(current_app.config['DATABASE'])
+            engine = create_engine(current_app.config['DATABASE_URI'])
             g.db = engine.connect()
 
         except:

@@ -33,7 +33,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         DEBUG=config('DEBUG', default=True),  # Make sure to change debug to False in production env
         SECRET_KEY=config('SECRET_KEY', default='dev'),  # CHANGE THIS!!!!
-        DATABASE=config('DATABASE_URI', default=os.path.join(app.instance_path, local_db_name)),
+        DATABASE_URI=config('DATABASE_URI', default='sqlite:///:memory:'),
         LOGFILE=config('LOGFILE', os.path.join(app.instance_path, 'logs/debug.log')),
         CACHE_TYPE=config('CACHE_TYPE', 'simple'),  # Configure caching
         CACHE_DEFAULT_TIMEOUT=config('CACHE_DEFAULT_TIMEOUT', 300), # Long cache times probably ok for ML api
@@ -42,13 +42,6 @@ def create_app(test_config=None):
     CORS(app)
     # Enable caching
     cache = Cache(app)
-
-    if test_config is None:
-        # Load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-    else:
-        # Load the test config if passed in
-        app.config.from_mapping(test_config)
 
     #  Register database functions.  Will allow db.close() to run on instance teardown.
     import db
@@ -92,14 +85,6 @@ def create_app(test_config=None):
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
     logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)
     logging.getLogger('flask_cors').level = logging.INFO
-
-    ##############################
-    ###Preload ML Model Library###
-    ##############################
-    from ml_module import ml_model
-
-    # Initialize Predictor
-    predictor = ml_model.Predictor()
 
     ############################
     ###Register Error Handles###
