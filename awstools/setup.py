@@ -9,8 +9,8 @@ setuptools.setup(
     author="Vincent Brandon",
     author_email="vincent.a.brandon@gmail.com",
     description="Wrapper for Boto3 commands",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
+    # long_description=long_description,
+    # long_description_content_type="text/markdown",
     url="https://github.com/Lambda-School-Labs/yelp-dataset-challenge-2-ds/tree/master/awstools",
     packages=setuptools.find_packages(),
     classifiers=[

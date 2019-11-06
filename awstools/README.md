@@ -19,7 +19,6 @@ aws s3 sync <source> <destination>
 
 ### AWS Tools Library
 
-```python
 import os
 from awstools import s3
 
@@ -39,7 +38,6 @@ print(text)
 # Test upload (saving)
 test_path = os.path.join(os.getcwd(), 'text.txt')
 bucket.save(test_path, 'upload_test.txt')
-```
 
 ### Install miniconda and setup environment
 
