@@ -60,10 +60,19 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-def query_database(query):
-    """General function for db SELECT
+def update_review(data):
+    """Update review table
     """
-    raise NotImplementedError
+    pass
+
+
+def query_database(query):
+    """Query handler for sqlalchemy database.  Parse tablename and direct query.
+    """
+    query_logger = logging.getLogger(__name__ + '.query_database')
+    query_logger.info("Query Received.  DataType: {}".format(type(query)))
+    query_logger.info(query)
+    return {'message': 'query received'}
 
 
 def write_database(query):
