@@ -58,9 +58,9 @@ def create_app(test_config=None):
             return render_markdown('README.md')
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
-    @app.route('/api/query/', methods=['GET'])
+    @app.route('/api/data/', methods=['GET'])
     @cache.cached(timeout=10)  # Agressive cache timeout.
-    def query():
+    def data():
         # Set Defaults
         defaults = None
         # Parse request
@@ -96,6 +96,7 @@ def create_app(test_config=None):
         return response
 
     return app
+
 
 def render_markdown(filename):
     # Convert markdown file to HTML for rendering

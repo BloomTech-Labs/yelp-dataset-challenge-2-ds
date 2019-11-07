@@ -60,8 +60,19 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-def query_database(query_string):
+def query_database(query):
+    """General function for db SELECT
     """
-    General function for querying matching data from predictors.
+    raise NotImplementedError
+
+
+def write_database(query):
+    """General function for db INSERT, UPDATE
+    """
+    raise NotImplementedError
+
+
+def delete_record(query):
+    """General function for db DELETE, DROP?
     """
     raise NotImplementedError

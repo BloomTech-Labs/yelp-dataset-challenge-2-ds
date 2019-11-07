@@ -35,6 +35,7 @@ class User(Base):
     name = Column(String)
     reviewcount = Column(Integer)
     averagestars = Column(Float)
+    weight = Column(Float)
     friends = Column(Text)
     yelping_since = Column(DateTime)
     compliment_cool = Column(Integer)
@@ -76,9 +77,11 @@ class Tip(Base):
     __tablename__ = 'tips'
 
     tipid = Column(String, primary_key=True)
-    compliments = Column(Integer)
+    compliment = Column(Integer)
     datetime = Column(DateTime)
     text = Column(Text)
+    token = Column(Text)
+    tokenvector = Column(Text)
     businessid = Column(String, ForeignKey('businesses.businessid'))
     userid = Column(String, ForeignKey('users.userid'))
 
@@ -92,5 +95,7 @@ class Review(Base):
     funny = Column(Integer)
     stars = Column(Float)
     text = Column(Text)
+    tokenvector = Column(Text)
+    token = Column(Text)
     businessid = Column(String, ForeignKey('businesses.businessid'))
     userid = Column(String, ForeignKey('users.userid'))
