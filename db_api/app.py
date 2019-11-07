@@ -17,7 +17,7 @@ import logging
 ###########
 
 # Set database name
-local_db_name = ''  # Change this or override with config.py file in instance/
+local_db_name = 'test.sqlite3'  # Change this or override with config.py file in instance/
 
 #########################
 ###Application Factory###
@@ -33,7 +33,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         DEBUG=config('DEBUG', default=True),  # Make sure to change debug to False in production env
         SECRET_KEY=config('SECRET_KEY', default='dev'),  # CHANGE THIS!!!!
-        DATABASE_URI=config('DATABASE_URI', default='sqlite:///:memory:'),
+        DATABASE_URI=config('DATABASE_URI', 'sqlite:///' + os.path.join(os.getcwd(), local_db_name)),  # For in-memory db: default='sqlite:///:memory:'),
         LOGFILE=config('LOGFILE', os.path.join(app.instance_path, 'logs/debug.log')),
         CACHE_TYPE=config('CACHE_TYPE', 'simple'),  # Configure caching
         CACHE_DEFAULT_TIMEOUT=config('CACHE_DEFAULT_TIMEOUT', 300), # Long cache times probably ok for ML api

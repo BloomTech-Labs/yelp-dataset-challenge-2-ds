@@ -6,6 +6,8 @@ Database
 
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from models import *
 
 import click
 from flask import current_app, g
@@ -24,9 +26,9 @@ def get_db():
     if 'db' not in g:
         db_logger.info('DB connection not found. Attempting connection.')
         try:
-            engine = create_engine(current_app.config['DATABASE_URI'])
-            g.db = engine.connect()
-
+            engine = create_engine(current_app.config['DATABASE_URI'], echo=True)
+            g.db_engine = engine.connect()
+            g.db = scoped_session(sessionmaker(bind=g.db_engine))  # Create thread-local session
         except:
             db_logger.error('Could not establish connection.  Aborting.')
             raise ConnectionError
@@ -38,10 +40,25 @@ def close_db(e=None):
     db = g.pop('db', None)
 
     if db is not None:
-        db.close()
+        db.remove()
+
+
+def init_db():
+    db = get_db()
+    Base.metadata.create_all(g.db_engine)
+
+@click.command('init-db')
+@with_appcontext
+def init_db_command():
+    """Create tables from models.py"""
+    init_db()
+    click.echo('Initialized the database')
+
 
 def init_app(app):
     app.teardown_appcontext(close_db)
+    app.cli.add_command(init_db_command)
+
 
 def query_database(query_string):
     """
