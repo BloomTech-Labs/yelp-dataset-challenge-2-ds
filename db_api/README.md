@@ -20,6 +20,10 @@ This is the database management system for the Yelp Dataset Challenge. All GET, 
 
 > Params, Returns
 
+### Initializing the Database
+
+> flask init-db
+
 ### Updates
 
 *Version Information*
