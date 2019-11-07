@@ -82,6 +82,7 @@ class Tip(Base):
     text = Column(Text)
     token = Column(Text)
     tokenvector = Column(Text)
+    ngram = Column(Text)
     businessid = Column(String, ForeignKey('businesses.businessid'))
     userid = Column(String, ForeignKey('users.userid'))
 
@@ -97,5 +98,6 @@ class Review(Base):
     text = Column(Text)
     tokenvector = Column(Text)
     token = Column(Text)
+    ngram = Column(Text)
     businessid = Column(String, ForeignKey('businesses.businessid'))
     userid = Column(String, ForeignKey('users.userid'))
