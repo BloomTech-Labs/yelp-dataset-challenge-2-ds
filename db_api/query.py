@@ -66,40 +66,74 @@ class Post(Query):
 ###########################
 ###Make Instance Methods###
 ###########################
+# TODO: Collapse into single makre factory that calls proper class
 def assign_maker(table_name):
     makers = {
-        'businesses': make_update_business,
+        'businesses': make_or_update_business,
+        'users': make_or_update_user,
+        'checkins': make_or_update_checkin,
+        'photos': make_or_update_photo,
+        'tips': make_or_update_tip,
+        'reviews': make_or_update_review,
     }
     return makers[table_name]
 
 
-def make_update_business(session, record, *args, **kwargs):
-    record = record
-    def data_or_none(category):
-        try:
-            return record[category]
-        except:
-            return None
+def make_or_update_business(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
     exists = session.query(Business).filter_by(businessid=record['businessid']).scalar() is not None
     if not exists:
         query_logger.info('businessid did not return existing row. Creating new business instance')
-        session.add(
-            Business(
-                businessid=data_or_none('businessid'),
-                name=data_or_none("name"),
-                latitude=data_or_none("latitude"),
-                longitude=data_or_none("longitude"),
-                postalcode=data_or_none("postalcode"),
-                numreviews=data_or_none("numreviews"),
-                stars=data_or_none("stars"),
-                isopen=data_or_none("isopen"),
-                attributes=data_or_none("attributes"),
-                categories=data_or_none("categories"),
-                )
-        )
+        session.add(Business(**record))
     else:
         session.query(Business).filter_by(businessid=record['businessid']).update(record)
 
 
+def make_or_update_user(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(User).filter_by(userid=record['userid']).scalar() is not None
+    if not exists:
+        query_logger.info('userid did not return existing row. Creating new business instance')
+        session.add(User(**record))
+    else:
+        session.query(User).filter_by(userid=record['userid']).update(record)
 
+
+def make_or_update_checkin(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(Checkin).filter_by(checkinid=record['checkinid']).scalar() is not None
+    if not exists:
+        query_logger.info('checkinid did not return existing row. Creating new business instance')
+        session.add(Checkin(**record))
+    else:
+        session.query(Checkin).filter_by(checkinid=record['checkinid']).update(record)
+
+
+def make_or_update_photo(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(Photo).filter_by(photoid=record['photoid']).scalar() is not None
+    if not exists:
+        query_logger.info('photoid did not return existing row. Creating new business instance')
+        session.add(Photo(**record))
+    else:
+        session.query(Photo).filter_by(photoid=record['photoid']).update(record)
+
+
+def make_or_update_tip(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(Tip).filter_by(tipid=record['tipid']).scalar() is not None
+    if not exists:
+        query_logger.info('tipid did not return existing row. Creating new business instance')
+        session.add(Tip(**record))
+    else:
+        session.query(Tip).filter_by(tipid=record['tipid']).update(record)
+
+
+def make_or_update_review(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(Review).filter_by(reviewid=record['reviewid']).scalar() is not None
+    if not exists:
+        query_logger.info('reviewid did not return existing row. Creating new business instance')
+        session.add(Review(**record))
+    else:
+        session.query(Review).filter_by(reviewid=record['reviewid']).update(record)

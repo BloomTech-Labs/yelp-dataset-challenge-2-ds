@@ -34,3 +34,11 @@ test_data = {
 ## Build post request
 request = requests.post(url='http://localhost:5000/api/data/', json=test_data)
 print(request)
+
+## Load sample_users.json and attempt time writing to db.
+
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=test_data2)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
