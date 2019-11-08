@@ -1,10 +1,12 @@
 import requests
 
+
+# TEST 1: Simple loading of business with manual dict
 test_data = {
     'table_name': 'businesses',
     'data': [
             {
-        "businessid": 'pioharegh04q3ur0qha089h23r2q3oiqhbef09q1234h',
+        "business_id": 'pioharegh04q3ur0qha089h23r2q3oiqhbef09q1234h',
         "name": 'Big Biz Inc',
         "latitude": 1.001,
         "longitude": 1.002,
@@ -16,7 +18,7 @@ test_data = {
         "categories": 'some number of categories, maybe a comma',
         },
         {
-        "businessid": 'pioharadfq342ha089h23r2q3oiqhbef09q1234h',
+        "business_id": 'pioharadfq342ha089h23r2q3oiqhbef09q1234h',
         "name": 'Big Biz Competitor Inc',
         "latitude": 1.004,
         "longitude": 1.006,
@@ -32,13 +34,45 @@ test_data = {
 }
 
 ## Build post request
-request = requests.post(url='http://localhost:5000/api/data/', json=test_data)
-print(request)
+# request = requests.post(url='http://localhost:5000/api/data/', json=test_data)
+# print(request)
 
-## Load sample_users.json and attempt time writing to db.
+## TEST 2: Load sample_users.json and attempt time writing to db.
+import json
+import pandas as pd
+import time
 
-# start = time.time()
-# request2 = requests.post(url='http://localhost:5000/api/data/', json=test_data2)
-# print(request2)
-# stop = time.time()
-# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+df = pd.read_parquet('sample_users.parquet')
+
+def df_to_query(df, tablename):
+    """Transform dataframe into dictionary object of correct form for database api request parsing.
+
+    param df: Tabular data to transform
+    type df: Pandas.DataFrame
+    """
+    import json
+
+    def transform_df(df):
+        # Generate a list of stringified dictionaries from the dataframe
+        #   Note: Will transform the entire supplied dataframe.  Split datframe into chunks prior.
+        records_list = df.head().to_json(orient='records', lines=True).split('\n')
+        # Cast stringified row entris as python dict vis json loads (important for request)
+        cast_records = [json.loads(x) for x in records_list]
+        return cast_records
+
+    package = {
+        'table_name': tablename,
+        'data': transform_df(df)
+    }
+
+    return package
+
+
+package = df_to_query(df=df, tablename='users')
+batch_size = len(package['data'])
+
+start = time.time()
+request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+print(request2)
+stop = time.time()
+print('Batch of {} processed in {}'.format(batch_size, stop-start))

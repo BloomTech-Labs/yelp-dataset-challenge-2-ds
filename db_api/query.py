@@ -12,20 +12,20 @@ class Query():
         """Check for constraints in a record.
             If any found, create empty rows with needed keys to enforce relational constraints.
         """
-        if 'businessid' in record.keys():
-            query_logger.info('BusinessID found in query.  Checking for existing record.')
-            exists = self.session.query(Business).filter_by(businessid=record['businessid']).scalar() is not None
+        if 'business_id' in record.keys():
+            query_logger.info('business_id found in query.  Checking for existing record.')
+            exists = self.session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
             if not exists:
-                query_logger.info('businessid did not return existing row. Generating empty row.')
-                business = Business(businessid=record['businessid'])
+                query_logger.info('business_id did not return existing row. Generating empty row.')
+                business = Business(business_id=record['business_id'])
                 self.session.add(business)
 
-        if 'userid' in record.keys():
-            query_logger('UserID found in query.  Checking for existing record.')
-            exists = self.session.query(User).filter_by(userid=record['userid']).scalar() is not None
+        if 'user_id' in record.keys():
+            query_logger('user_id found in query.  Checking for existing record.')
+            exists = self.session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
             if not exists:
-                query_logger.info('userid did not return existing row. Generating empty row.')
-                user = User(userid=record['userid'])
+                query_logger.info('user_id did not return existing row. Generating empty row.')
+                user = User(user_id=record['user_id'])
                 self.session.add(user)
 
     def fill(self, data):
@@ -63,6 +63,11 @@ class Post(Query):
         self.session.commit()
 
 
+###################
+###Query Methods###
+###################
+
+
 ###########################
 ###Make Instance Methods###
 ###########################
@@ -81,59 +86,59 @@ def assign_maker(table_name):
 
 def make_or_update_business(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(Business).filter_by(businessid=record['businessid']).scalar() is not None
+    exists = session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
     if not exists:
-        query_logger.info('businessid did not return existing row. Creating new business instance')
+        query_logger.info('business_id did not return existing row. Creating new business instance')
         session.add(Business(**record))
     else:
-        session.query(Business).filter_by(businessid=record['businessid']).update(record)
+        session.query(Business).filter_by(business_id=record['business_id']).update(record)
 
 
 def make_or_update_user(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(User).filter_by(userid=record['userid']).scalar() is not None
+    exists = session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
     if not exists:
-        query_logger.info('userid did not return existing row. Creating new business instance')
+        query_logger.info('user_id did not return existing row. Creating new business instance')
         session.add(User(**record))
     else:
-        session.query(User).filter_by(userid=record['userid']).update(record)
+        session.query(User).filter_by(user_id=record['user_id']).update(record)
 
 
 def make_or_update_checkin(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(Checkin).filter_by(checkinid=record['checkinid']).scalar() is not None
+    exists = session.query(Checkin).filter_by(checkin_id=record['checkin_id']).scalar() is not None
     if not exists:
-        query_logger.info('checkinid did not return existing row. Creating new business instance')
+        query_logger.info('checkin_id did not return existing row. Creating new business instance')
         session.add(Checkin(**record))
     else:
-        session.query(Checkin).filter_by(checkinid=record['checkinid']).update(record)
+        session.query(Checkin).filter_by(checkin_id=record['checkin_id']).update(record)
 
 
 def make_or_update_photo(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(Photo).filter_by(photoid=record['photoid']).scalar() is not None
+    exists = session.query(Photo).filter_by(photo_id=record['photo_id']).scalar() is not None
     if not exists:
-        query_logger.info('photoid did not return existing row. Creating new business instance')
+        query_logger.info('photo_id did not return existing row. Creating new business instance')
         session.add(Photo(**record))
     else:
-        session.query(Photo).filter_by(photoid=record['photoid']).update(record)
+        session.query(Photo).filter_by(photo_id=record['photo_id']).update(record)
 
 
 def make_or_update_tip(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(Tip).filter_by(tipid=record['tipid']).scalar() is not None
+    exists = session.query(Tip).filter_by(tip_id=record['tip_id']).scalar() is not None
     if not exists:
-        query_logger.info('tipid did not return existing row. Creating new business instance')
+        query_logger.info('tip_id did not return existing row. Creating new business instance')
         session.add(Tip(**record))
     else:
-        session.query(Tip).filter_by(tipid=record['tipid']).update(record)
+        session.query(Tip).filter_by(tip_id=record['tip_id']).update(record)
 
 
 def make_or_update_review(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(Review).filter_by(reviewid=record['reviewid']).scalar() is not None
+    exists = session.query(Review).filter_by(review_id=record['review_id']).scalar() is not None
     if not exists:
-        query_logger.info('reviewid did not return existing row. Creating new business instance')
+        query_logger.info('review_id did not return existing row. Creating new business instance')
         session.add(Review(**record))
     else:
-        session.query(Review).filter_by(reviewid=record['reviewid']).update(record)
+        session.query(Review).filter_by(review_id=record['review_id']).update(record)

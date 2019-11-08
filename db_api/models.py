@@ -16,7 +16,7 @@ from sqlalchemy.orm import relationship
 class Business(Base):
     __tablename__ = 'businesses'
 
-    businessid = Column(String, primary_key=True)
+    business_id = Column(String, primary_key=True)
     name = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
@@ -31,7 +31,7 @@ class Business(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    userid = Column(String, primary_key=True)
+    user_id = Column(String, primary_key=True)
     name = Column(String)
     reviewcount = Column(Integer)
     averagestars = Column(Float)
@@ -61,7 +61,7 @@ class Checkin(Base):
 
     checkinid = Column(String, primary_key=True)
     datetime = Column(DateTime)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Photo(Base):
@@ -70,7 +70,7 @@ class Photo(Base):
     photoid = Column(String, primary_key=True)
     caption = Column(String)
     label = Column(String)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Tip(Base):
@@ -83,8 +83,8 @@ class Tip(Base):
     token = Column(Text)
     tokenvector = Column(Text)
     ngram = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
 
 
 class Review(Base):
@@ -99,5 +99,5 @@ class Review(Base):
     tokenvector = Column(Text)
     token = Column(Text)
     ngram = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
