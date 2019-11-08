@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime
 from models import *
+
 
 query_logger = logging.getLogger(__name__)
 
@@ -11,7 +13,15 @@ class Query():
     def check_constraints(self, record):
         """Check for constraints in a record.
             If any found, create empty rows with needed keys to enforce relational constraints.
+            Also handle known typing difficulties with SQL Alchemy (datetime)
         """
+        # DateTime Checks
+        query_logger.info('Checking for datetime fields')
+        for field in ['data', 'yelping_since']:
+            if field in record.keys():
+                record[field] = convert_to_datetime(record[field])
+
+        # Foreign Key Checks
         if 'business_id' in record.keys():
             query_logger.info('business_id found in query.  Checking for existing record.')
             exists = self.session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
@@ -21,12 +31,14 @@ class Query():
                 self.session.add(business)
 
         if 'user_id' in record.keys():
-            query_logger('user_id found in query.  Checking for existing record.')
+            query_logger.info('user_id found in query.  Checking for existing record.')
             exists = self.session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
             if not exists:
                 query_logger.info('user_id did not return existing row. Generating empty row.')
                 user = User(user_id=record['user_id'])
                 self.session.add(user)
+
+        self.session.commit()
 
     def fill(self, data):
         NotImplemented
@@ -46,7 +58,7 @@ class Post(Query):
     def __init__(self, session, query):
         super().__init__(session, query)
         query_logger.info('POST query created')
-        query_logger.info('Session: {} Query: {}'.format(session, query))
+        query_logger.debug('Session: {} Query: {}'.format(session, query))
         self.query = query
         self.maker = assign_maker(query['table_name'])
         self.fill(query['data'])
@@ -66,6 +78,17 @@ class Post(Query):
 ###################
 ###Query Methods###
 ###################
+
+def convert_to_datetime(time_string):
+    query_logger.info('Converting {} to datetime'.format(time_string))
+    try:
+        return datetime.fromisoformat(time_string)
+    except ValueError:
+        query_logger.info('Value Error: Invalid isoformat string')
+        query_logger.info('Sending default datetime')
+        return datetime.fromisoformat('1969-01-01')
+    except:
+        raise
 
 
 ###########################

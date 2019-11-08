@@ -55,7 +55,7 @@ def df_to_query(df, tablename):
     def transform_df(df):
         # Generate a list of stringified dictionaries from the dataframe
         #   Note: Will transform the entire supplied dataframe.  Split datframe into chunks prior.
-        records_list = df.head().to_json(orient='records', lines=True).split('\n')
+        records_list = df.to_json(orient='records', lines=True).split('\n')
         # Cast stringified row entris as python dict vis json loads (important for request)
         cast_records = [json.loads(x) for x in records_list]
         return cast_records
@@ -68,7 +68,18 @@ def df_to_query(df, tablename):
     return package
 
 
-package = df_to_query(df=df, tablename='users')
+# package = df_to_query(df=df.head(100), tablename='users')
+# batch_size = len(package['data'])
+
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+# Tips
+df = pd.read_parquet('sample_tips.parquet')
+package = df_to_query(df=df.head(100), tablename='tips')
 batch_size = len(package['data'])
 
 start = time.time()
@@ -76,3 +87,36 @@ request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
 print(request2)
 stop = time.time()
 print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+# # Reviews
+# df = pd.read_parquet('sample_reviews.parquet')
+# package = df_to_query(df=df.head(100), tablename='reviews')
+# batch_size = len(package['data'])
+
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+# # Checkins
+# df = pd.read_parquet('sample_checkins.parquet')
+# package = df_to_query(df=df.head(100), tablename='checkins')
+# batch_size = len(package['data'])
+
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+# # Photos
+# df = pd.read_parquet('sample_photos.parquet')
+# package = df_to_query(df=df.head(100), tablename='photos')
+# batch_size = len(package['data'])
+
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))

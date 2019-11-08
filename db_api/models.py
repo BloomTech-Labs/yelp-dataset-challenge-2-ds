@@ -33,8 +33,8 @@ class User(Base):
 
     user_id = Column(String, primary_key=True)
     name = Column(String)
-    reviewcount = Column(Integer)
-    averagestars = Column(Float)
+    review_count = Column(Integer)
+    average_stars = Column(Float)
     weight = Column(Float)
     friends = Column(Text)
     yelping_since = Column(DateTime)
@@ -59,15 +59,15 @@ class User(Base):
 class Checkin(Base):
     __tablename__ = 'checkins'
 
-    checkinid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
+    checkin_id = Column(String, primary_key=True)
+    date = Column(DateTime)
     business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Photo(Base):
     __tablename__ = 'photos'
 
-    photoid = Column(String, primary_key=True)
+    photo_id = Column(String, primary_key=True)
     caption = Column(String)
     label = Column(String)
     business_id = Column(String, ForeignKey('businesses.business_id'))
@@ -76,12 +76,12 @@ class Photo(Base):
 class Tip(Base):
     __tablename__ = 'tips'
 
-    tipid = Column(String, primary_key=True)
+    tip_id = Column(String, primary_key=True)
     compliment = Column(Integer)
-    datetime = Column(DateTime)
+    date = Column(DateTime)
     text = Column(Text)
     token = Column(Text)
-    tokenvector = Column(Text)
+    token_vector = Column(Text)
     ngram = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
     user_id = Column(String, ForeignKey('users.user_id'))
@@ -90,13 +90,13 @@ class Tip(Base):
 class Review(Base):
     __tablename__ = 'reviews'
 
-    reviewid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
+    review_id = Column(String, primary_key=True)
+    date = Column(DateTime)
     cool = Column(Integer)
     funny = Column(Integer)
     stars = Column(Float)
     text = Column(Text)
-    tokenvector = Column(Text)
+    token_vector = Column(Text)
     token = Column(Text)
     ngram = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
