@@ -23,10 +23,21 @@ class Business(Base):
     postalcode = Column(Integer)
     numreviews = Column(Integer)
     stars = Column(Integer)
-    isopen = Column(Binary)
+    isopen = Column(Integer)
     attributes = Column(String)
     categories = Column(String)
 
+    """ Default values if needed
+    default='none')
+    default=0.0)
+    default=0.0)
+    default=0)
+    default=9999)
+    default=9999)
+    default=0)
+    default='none')
+    default='none')
+    """
 
 class User(Base):
     __tablename__ = 'users'

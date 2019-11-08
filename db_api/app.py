@@ -67,12 +67,15 @@ def create_app(test_config=None):
                 raise InvalidUsage(message="Search query not provided")
             # Pass json portion of request to database query handler
             search_request = request.json
-            search_response = db.query_database(search_request)
-
+            search_response = db.query_database(method='GET', query=search_request)
         elif request.method == 'POST':
-            pass
+            if not request.json:
+                raise InvalidUsage(message="Post JSON data not provided")
+            # Pass json portion of request to database query handler
+            search_request = request.json
+            search_response = db.query_database(method='POST', query=search_request)
         else:
-            raise InvalidUsage(message="Search query not provided")
+            raise InvalidUsage(message="Incorrect request type")
 
         return search_response
 

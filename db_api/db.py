@@ -8,6 +8,7 @@ Database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models import *
+from query import *
 
 import click
 from flask import current_app, g
@@ -60,28 +61,21 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-def update_review(data):
-    """Update review table
-    """
-    pass
-
-
-def query_database(query):
+def query_database(method, query):
     """Query handler for sqlalchemy database.  Parse tablename and direct query.
     """
     query_logger = logging.getLogger(__name__ + '.query_database')
-    query_logger.info("Query Received.  DataType: {}".format(type(query)))
+    query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
     query_logger.info(query)
-    return {'message': 'query received'}
 
+    session = get_db()
 
-def write_database(query):
-    """General function for db INSERT, UPDATE
-    """
-    raise NotImplementedError
+    if method == 'GET':
+        query = Get(session=session, query=query)
+        query.execute()
+        return query.contents_
+    elif method == 'POST':
+        query = Post(session=session, query=query)
+        query.execute()
 
-
-def delete_record(query):
-    """General function for db DELETE, DROP?
-    """
-    raise NotImplementedError
+    return {'message': 'POST received and executed'}
