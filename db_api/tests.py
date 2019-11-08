@@ -1,5 +1,50 @@
 import requests
 
+## Test Helper Functions (from snippets - may be old.  See snippets for up-to-date functions.)
+
+def generate_id(record):
+    """Generate ID returns a repeatable hash of a given record.
+
+    param record: python string, list, or dictionary, pandas.series
+    type record: string
+    """
+    import hashlib
+    import pandas as pd
+    # Convert series to dictionary object for encoding
+    if type(record) == pd.Series:
+        record = str(record.to_dict())
+    else:
+        record = str(record)
+    # Encode record to bytes
+    record = record.encode()
+    return hashlib.sha256(record).hexdigest()
+
+def df_to_query(df, tablename):
+    """Transform dataframe into dictionary object of correct form for database api request parsing.
+
+    param df: Tabular data to transform
+    type df: Pandas.DataFrame
+    """
+    import json
+
+    def transform_df(df):
+        # Generate a list of stringified dictionaries from the dataframe
+        #   Note: Will transform the entire supplied dataframe.  Split datframe into chunks prior.
+        records_list = df.to_json(orient='records', lines=True).split('\n')
+        # Cast stringified row entris as python dict vis json loads (important for request)
+        cast_records = [json.loads(x) for x in records_list]
+        return cast_records
+
+    package = {
+        'table_name': tablename,
+        'data': transform_df(df)
+    }
+
+    return package
+
+###########
+###Tests###
+###########
 
 # TEST 1: Simple loading of business with manual dict
 test_data = {
@@ -35,39 +80,19 @@ test_data = {
 
 ## Build post request
 # request = requests.post(url='http://localhost:5000/api/data/', json=test_data)
-# print(request)
+# try:
+#     print(request)
+# except:
+#     print('Test 1 Failed')
+#     raise
 
 ## TEST 2: Load sample_users.json and attempt time writing to db.
 import json
 import pandas as pd
 import time
 
-df = pd.read_parquet('sample_users.parquet')
-
-def df_to_query(df, tablename):
-    """Transform dataframe into dictionary object of correct form for database api request parsing.
-
-    param df: Tabular data to transform
-    type df: Pandas.DataFrame
-    """
-    import json
-
-    def transform_df(df):
-        # Generate a list of stringified dictionaries from the dataframe
-        #   Note: Will transform the entire supplied dataframe.  Split datframe into chunks prior.
-        records_list = df.to_json(orient='records', lines=True).split('\n')
-        # Cast stringified row entris as python dict vis json loads (important for request)
-        cast_records = [json.loads(x) for x in records_list]
-        return cast_records
-
-    package = {
-        'table_name': tablename,
-        'data': transform_df(df)
-    }
-
-    return package
-
-
+# Users
+# df = pd.read_parquet('sample_users.parquet')
 # package = df_to_query(df=df.head(100), tablename='users')
 # batch_size = len(package['data'])
 
@@ -79,7 +104,9 @@ def df_to_query(df, tablename):
 
 # Tips
 df = pd.read_parquet('sample_tips.parquet')
-package = df_to_query(df=df.head(100), tablename='tips')
+df['tip_id'] = df.apply(generate_id, axis=1)
+package = df_to_query(df=df.head(2), tablename='tips')
+print(package)
 batch_size = len(package['data'])
 
 start = time.time()

@@ -17,7 +17,7 @@ class Query():
         """
         # DateTime Checks
         query_logger.info('Checking for datetime fields')
-        for field in ['data', 'yelping_since']:
+        for field in ['date', 'yelping_since']:
             if field in record.keys():
                 record[field] = convert_to_datetime(record[field])
 
@@ -82,11 +82,16 @@ class Post(Query):
 def convert_to_datetime(time_string):
     query_logger.info('Converting {} to datetime'.format(time_string))
     try:
+        assert type(time_string) == str
         return datetime.fromisoformat(time_string)
     except ValueError:
         query_logger.info('Value Error: Invalid isoformat string')
         query_logger.info('Sending default datetime')
         return datetime.fromisoformat('1969-01-01')
+    except AssertionError:
+        query_logger.info('AssertionError: DateTime not a string.')
+        query_logger.info('Attempting translation')
+        return datetime.fromtimestamp(time_string / 1e3)
     except:
         raise
 
