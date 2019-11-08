@@ -58,26 +58,26 @@ def create_app(test_config=None):
             return render_markdown('README.md')
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
-    @app.route('/api/query/', methods=['GET'])
+    @app.route('/api/data/', methods=['GET', 'POST'])
     @cache.cached(timeout=10)  # Agressive cache timeout.
-    def query():
-        # Set Defaults
-        defaults = None
+    def data():
         # Parse request
         if request.method == 'GET':
-            if not 'search' in request.args:
+            if not request.json:
                 raise InvalidUsage(message="Search query not provided")
-
-        # Check for hard-coded defaults.  Suggest loading defaults via function/env
-        #   to activate/deactivate static response testing.
-        if defaults is not None:
-            search_request = defaults
+            # Pass json portion of request to database query handler
+            search_request = request.json
+            search_response = db.query_database(method='GET', query=search_request)
+        elif request.method == 'POST':
+            if not request.json:
+                raise InvalidUsage(message="Post JSON data not provided")
+            # Pass json portion of request to database query handler
+            search_request = request.json
+            search_response = db.query_database(method='POST', query=search_request)
         else:
-            search_request = request.args['search']
-        # Send search request to query generator, db handler
-        query = NotImplemented
+            raise InvalidUsage(message="Incorrect request type")
 
-        return NotImplemented
+        return search_response
 
     #############
     ###Logging###
@@ -96,6 +96,7 @@ def create_app(test_config=None):
         return response
 
     return app
+
 
 def render_markdown(filename):
     # Convert markdown file to HTML for rendering
