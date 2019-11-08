@@ -30,6 +30,15 @@ This is the database management system for the Yelp Dataset Challenge. All GET, 
 
 > 2019-11-06 - 0.1 Pre-Release
 
+## Testing
+
+Testing is currently a top to bottom python script tests.py and tests expected usage of the API.
+
+### Running the test script
+
+> Navigate to app.py directory and start flask server with: python app.py
+> Run test scripts with: python tests.py
+
 ## Notes
 
 ### Instance Folder
