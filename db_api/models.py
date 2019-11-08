@@ -77,7 +77,7 @@ class Tip(Base):
     __tablename__ = 'tips'
 
     tip_id = Column(String, primary_key=True)
-    compliment = Column(Integer)
+    compliment_count = Column(Integer)
     date = Column(DateTime)
     text = Column(Text)
     token = Column(Text)
