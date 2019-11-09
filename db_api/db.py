@@ -25,9 +25,9 @@ def get_db():
     """
     db_logger = logging.getLogger(__name__ + '.getdb')
     if 'db' not in g:
-        db_logger.info('DB connection not found. Attempting connection.')
+        db_logger.debug('DB connection not found. Attempting connection.')
         try:
-            engine = create_engine(current_app.config['DATABASE_URI'], echo=True)
+            engine = create_engine(current_app.config['DATABASE_URI'])
             g.db = engine.connect()
             # g.db = scoped_session(sessionmaker(bind=engine.connect()))  # Create thread-local session
         except:

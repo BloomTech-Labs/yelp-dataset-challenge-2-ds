@@ -62,7 +62,7 @@ def create_app(test_config=None):
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
     @app.route('/api/data/', methods=['GET', 'POST'])
-    @cache.cached(timeout=10)  # Agressive cache timeout.
+    # @cache.cached(timeout=10)  # Agressive cache timeout.  DEBUG remove caching to see about repear requests
     def data():
         # Parse request
         if request.method == 'GET':
@@ -86,6 +86,8 @@ def create_app(test_config=None):
     ###Logging###
     #############
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
+    # May significantly impair performance if writing logfile to disk (or network drive).
+    # To enable different services, see README.md
     logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)
     logging.getLogger('flask_cors').level = logging.INFO
 
