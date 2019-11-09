@@ -1,20 +1,22 @@
 import logging
 from datetime import datetime
 from models import *
+from db import get_session
+from flask import current_app, g
 
 
 query_logger = logging.getLogger(__name__)
 
 class Query():
-    def __init__(self, session, query):
-        self.session = session
+    def __init__(self, query):
         self.query = query
 
-    def check_constraints(self, record):
+    def check_constraints(self, record, session):
         """Check for constraints in a record.
             If any found, create empty rows with needed keys to enforce relational constraints.
             Also handle known typing difficulties with SQL Alchemy (datetime)
         """
+
         # DateTime Checks
         query_logger.info('Checking for datetime fields')
         for field in ['date', 'yelping_since']:
@@ -24,21 +26,20 @@ class Query():
         # Foreign Key Checks
         if 'business_id' in record.keys():
             query_logger.info('business_id found in query.  Checking for existing record.')
-            exists = self.session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
+            print('session datatype debug: ', type(session))
+            exists = session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
             if not exists:
                 query_logger.info('business_id did not return existing row. Generating empty row.')
                 business = Business(business_id=record['business_id'])
-                self.session.add(business)
+                session.add(business)
 
         if 'user_id' in record.keys():
             query_logger.info('user_id found in query.  Checking for existing record.')
-            exists = self.session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
+            exists = session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
             if not exists:
                 query_logger.info('user_id did not return existing row. Generating empty row.')
                 user = User(user_id=record['user_id'])
-                self.session.add(user)
-
-        self.session.commit()
+                session.add(user)
 
     def fill(self, data):
         NotImplemented
@@ -48,36 +49,49 @@ class Query():
 
 
 class Get(Query):
-    def __init__(self, session, query):
-        super().__init__(session, query)
+    def __init__(self, query):
+        super().__init__(query)
         query_logger.info('GET query created.')
         self.contents_ = None  # Generate from execution step
 
 
 class Post(Query):
-    def __init__(self, session, query):
-        super().__init__(session, query)
+    def __init__(self, query):
+        super().__init__(query)
         query_logger.info('POST query created')
-        query_logger.debug('Session: {} Query: {}'.format(session, query))
-        self.query = query
+        query_logger.debug('Query: {}'.format(query))
         self.maker = assign_maker(query['table_name'])
-        self.fill(query['data'])
+        self.execute(query['data'])
 
-
-    def fill(self, records):
+    def execute(self, records):
         assert type(records) == list
-        query_logger.info('Adding {} records to session stack.'.format(len(records)))
-        for record in records:
-            self.check_constraints(record)
-            self.maker(self.session, record)
-
-    def execute(self):
-        self.session.commit()
+        with get_session() as session:
+            query_logger.info('Adding {} records to session stack.'.format(len(records)))
+            for record in records:
+                self.check_constraints(record=record, session=session)
+                self.maker(record=record, session=session)
+            session.commit()
 
 
 ###################
 ###Query Methods###
 ###################
+
+def query_database(method, query):
+    """Query handler for sqlalchemy database.  Parse tablename and direct query.
+    """
+    query_logger = logging.getLogger(__name__ + '.query_database')
+    query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
+    query_logger.info(query)
+
+    if method == 'GET':
+        query = Get(query=query)
+        return query.contents_
+    elif method == 'POST':
+        query = Post(query=query)
+
+    return {'message': 'POST received and executed'}
+
 
 def convert_to_datetime(time_string):
     query_logger.info('Converting {} to datetime'.format(time_string))

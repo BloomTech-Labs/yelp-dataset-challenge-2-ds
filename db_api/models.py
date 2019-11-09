@@ -60,7 +60,7 @@ class Checkin(Base):
     __tablename__ = 'checkins'
 
     checkin_id = Column(String, primary_key=True)
-    date = Column(DateTime)
+    dates = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
@@ -94,6 +94,7 @@ class Review(Base):
     date = Column(DateTime)
     cool = Column(Integer)
     funny = Column(Integer)
+    useful = Column(Integer)
     stars = Column(Float)
     text = Column(Text)
     token_vector = Column(Text)
