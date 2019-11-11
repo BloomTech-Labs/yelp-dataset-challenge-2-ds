@@ -1,8 +1,11 @@
 import logging
 from datetime import datetime
+from multiprocessing import Pool
 from models import *
 from db import get_session
 from flask import current_app, g
+import numpy as np
+import time
 
 
 query_logger = logging.getLogger(__name__)
@@ -31,6 +34,7 @@ class Query():
                 query_logger.info('business_id did not return existing row. Generating empty row.')
                 business = Business(business_id=record['business_id'])
                 session.add(business)
+                session.commit()
 
         if 'user_id' in record.keys():
             query_logger.debug('user_id found in query.  Checking for existing record.')
@@ -39,6 +43,8 @@ class Query():
                 query_logger.info('user_id did not return existing row. Generating empty row.')
                 user = User(user_id=record['user_id'])
                 session.add(user)
+                session.commit()
+
 
     def fill(self, data):
         NotImplemented
@@ -77,6 +83,7 @@ class Post(Query):
 ###Query Methods###
 ###################
 
+# Process function to map onto databunch
 def query_database(method, query):
     """Query handler for sqlalchemy database.  Parse tablename and direct query.
     """
@@ -84,13 +91,26 @@ def query_database(method, query):
     query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
     query_logger.debug(query)
 
+    num_splits = 8  # multi-threaded session operation
+    # Check query data size.  If small enough, this number of splits may cause pool issues.
+    if len(query['data']) < num_splits:
+        num_splits = len(query['data'])
+
     if method == 'GET':
         query = Get(query=query)
         return query.contents_
     elif method == 'POST':
-        query = Post(query=query)
+        # query = Post(query=query)  # Single-threaded operation
+        databunch = build_databunch(query=query, num_splits=num_splits) # Split data
+        p = Pool(len(databunch))
+        p.map(run_post, databunch)
 
     return {'message': 'POST received and executed'}
+
+
+def run_post(query):
+    time.sleep(np.random.random_sample())
+    return Post(query=query)
 
 
 def convert_to_datetime(time_string):
@@ -109,6 +129,22 @@ def convert_to_datetime(time_string):
     except:
         raise
 
+
+def build_databunch(query, num_splits=3):
+    databunch = []
+    bunch_size = int(len(query['data']) / num_splits)
+    for i in range(num_splits):
+        if i < num_splits-1:
+            data_range = (i*bunch_size, (i+1)*bunch_size)
+        else:
+            data_range = (i*bunch_size, len(query['data']))
+        databunch.append(
+            {
+                'table_name': query['table_name'],
+                'data': query['data'][data_range[0]:data_range[1]]
+            }
+        )
+    return databunch
 
 ###########################
 ###Make Instance Methods###
