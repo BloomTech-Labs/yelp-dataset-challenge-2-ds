@@ -34,6 +34,7 @@ local_db_name = 'test.sqlite3'  # Change this or override with config.py file in
 def create_app(test_config=None):
     # Create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app_logger = logging.getLogger(__name__)
     # If environment vairables not set, will default to development expected paths and names
     app.config.from_mapping(
         DEBUG=config('DEBUG', default=True),  # Make sure to change debug to False in production env
@@ -70,6 +71,7 @@ def create_app(test_config=None):
     # @cache.cached(timeout=10)  # Agressive cache timeout.  DEBUG remove caching to see about repear requests
     def data():
         # Parse request
+        app_logger.info('Data request received.  Processing.')
         if request.method == 'GET':
             if not request.json:
                 raise InvalidUsage(message="Search query not provided")
@@ -80,6 +82,7 @@ def create_app(test_config=None):
             if not request.json:
                 raise InvalidUsage(message="Post JSON data not provided")
             # Pass json portion of request to database query handler
+            app_logger.info('POST Request recognized.  Sending to query handler.')
             search_request = request.json
             search_response = query.query_database(method='POST', query=search_request)
         else:
