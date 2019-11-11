@@ -53,40 +53,40 @@ def df_to_query(df, tablename):
 ###########
 
 # TEST 1: Simple loading of business with manual dict
-def generate_test_data():
-    test_data = {
-        'table_name': 'businesses',
-        'data': [
-                {
-            "business_id": hashlib.sha256(str(np.random.randint(0, 100000)).encode()).hexdigest(),
-            "name": 'Big Biz Inc',
-            "latitude": 1.001,
-            "longitude": 1.002,
-            "postalcode": 1234,
-            "numreviews": 9,
-            "stars": 3.4,
-            "isopen": 0,
-            "attributes": 'some number of attributes, maybe a comma',
-            "categories": 'some number of categories, maybe a comma',
-            },
-            {
-            "business_id": hashlib.sha256(str(np.random.randint(0, 100000)).encode()).hexdigest(),
-            "name": 'Big Biz Competitor Inc',
-            "latitude": 1.004,
-            "longitude": 1.006,
-            "postalcode": 9999,
-            "numreviews": 2,
-            "stars": 3.8,
-            "isopen": 1,
-            "attributes": 'some number of attributes, maybe a comma',
-            "categories": 'some number of categories, maybe a comma',
-            }
+# def generate_test_data():
+#     test_data = {
+#         'table_name': 'businesses',
+#         'data': [
+#                 {
+#             "business_id": hashlib.sha256(str(np.random.randint(0, 100000)).encode()).hexdigest(),
+#             "name": 'Big Biz Inc',
+#             "latitude": 1.001,
+#             "longitude": 1.002,
+#             "postalcode": 1234,
+#             "numreviews": 9,
+#             "stars": 3.4,
+#             "isopen": 0,
+#             "attributes": 'some number of attributes, maybe a comma',
+#             "categories": 'some number of categories, maybe a comma',
+#             },
+#             {
+#             "business_id": hashlib.sha256(str(np.random.randint(0, 100000)).encode()).hexdigest(),
+#             "name": 'Big Biz Competitor Inc',
+#             "latitude": 1.004,
+#             "longitude": 1.006,
+#             "postalcode": 9999,
+#             "numreviews": 2,
+#             "stars": 3.8,
+#             "isopen": 1,
+#             "attributes": 'some number of attributes, maybe a comma',
+#             "categories": 'some number of categories, maybe a comma',
+#             }
 
-        ]
-    }
-    return test_data
+#         ]
+#     }
+#     return test_data
 
-# ## Build post request
+## Build post request
 # request = requests.post(url='http://localhost:5000/api/data/', json=generate_test_data())
 # try:
 #     print(request)
@@ -101,7 +101,7 @@ def generate_test_data():
 #     request = requests.post(url='http://localhost:5000/api/data/', json=generate_test_data())
 #     print(request, ' ', i)
 
-# ## TEST 3: Load sample_users.json and attempt time writing to db.
+## TEST 3: Load sample_users.json and attempt time writing to db.
 
 # Users
 df = pd.read_parquet('sample_users.parquet')

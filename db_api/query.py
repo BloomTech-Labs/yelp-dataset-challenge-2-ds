@@ -28,7 +28,7 @@ class Query():
             query_logger.debug('business_id found in query.  Checking for existing record.')
             exists = session.query(Business).filter_by(business_id=record['business_id']).scalar() is not None
             if not exists:
-                query_logger.debug('business_id did not return existing row. Generating empty row.')
+                query_logger.info('business_id did not return existing row. Generating empty row.')
                 business = Business(business_id=record['business_id'])
                 session.add(business)
 
@@ -36,7 +36,7 @@ class Query():
             query_logger.debug('user_id found in query.  Checking for existing record.')
             exists = session.query(User).filter_by(user_id=record['user_id']).scalar() is not None
             if not exists:
-                query_logger.debug('user_id did not return existing row. Generating empty row.')
+                query_logger.info('user_id did not return existing row. Generating empty row.')
                 user = User(user_id=record['user_id'])
                 session.add(user)
 
@@ -57,7 +57,7 @@ class Get(Query):
 class Post(Query):
     def __init__(self, query):
         super().__init__(query)
-        query_logger.debug('POST query created')
+        query_logger.info('POST query created')
         query_logger.debug('Query: {}'.format(query))
         self.maker = assign_maker(query['table_name'])
         self.execute(query['data'])
@@ -65,10 +65,11 @@ class Post(Query):
     def execute(self, records):
         assert type(records) == list
         with get_session() as session:
-            query_logger.debug('Adding {} records to session stack.'.format(len(records)))
+            query_logger.info('Adding {} records to session stack.'.format(len(records)))
             for record in records:
                 self.check_constraints(record=record, session=session)
                 self.maker(record=record, session=session)
+            query_logger.info('Stack comitted')
             session.commit()
 
 
