@@ -101,20 +101,19 @@ def df_to_query(df, tablename):
 #     request = requests.post(url='http://localhost:5000/api/data/', json=generate_test_data())
 #     print(request, ' ', i)
 
-## TEST 3: Load sample_users.json and attempt time writing to db.
+# TEST 3: Load sample_users.json and attempt time writing to db.
 
-# # Users
-# df = pd.read_parquet('sample_users.parquet')
-# package = df_to_query(df=df, tablename='users')
-# batch_size = len(package['data'])
+# Users
+df = pd.read_parquet('sample_users.parquet')
+package = df_to_query(df=df.head(100), tablename='users')
+batch_size = len(package['data'])
 
-# start = time.time()
-# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
-# print(request2)
-# stop = time.time()
-# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+start = time.time()
+request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/data/', json=package)
+print(request2)
+stop = time.time()
+print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
-# time.sleep(1)
 
 # # Tips
 # df = pd.read_parquet('sample_tips.parquet')
@@ -139,18 +138,18 @@ def df_to_query(df, tablename):
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
-# Checkins
-df = pd.read_parquet('sample_checkins.parquet')
-df['checkin_id'] = df.apply(generate_id, axis=1)
-df = df.rename(columns={'date': 'dates'})
-package = df_to_query(df=df, tablename='checkins')
-batch_size = len(package['data'])
+# # Checkins
+# df = pd.read_parquet('sample_checkins.parquet')
+# df['checkin_id'] = df.apply(generate_id, axis=1)
+# df = df.rename(columns={'date': 'dates'})
+# package = df_to_query(df=df, tablename='checkins')
+# batch_size = len(package['data'])
 
-start = time.time()
-request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
-print(request2)
-stop = time.time()
-print('Batch of {} processed in {}'.format(batch_size, stop-start))
+# start = time.time()
+# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 # # Photos
 # df = pd.read_parquet('sample_photos.parquet')
