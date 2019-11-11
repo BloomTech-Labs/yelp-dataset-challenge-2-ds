@@ -108,4 +108,4 @@ venv.bak/
 # AWS stuff
 *.aws
 *.data
-*.pem
+rds-combined-ca-bundle.pem

@@ -1,8 +1,0 @@
-numpy
-pandas
-python-decouple
-requests
-Flask-SQLAlchemy
-Flask
-Flask-Cors
-psycopg2
