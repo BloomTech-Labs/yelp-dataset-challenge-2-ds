@@ -91,7 +91,7 @@ def query_database(method, query):
     query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
     query_logger.debug(query)
 
-    num_splits = 2  # multi-threaded session operation
+    # num_splits = 2  # multi-threaded session operation
     # Check query data size.  If small enough, this number of splits may cause pool issues.
     if len(query['data']) < num_splits:
         num_splits = len(query['data'])
@@ -100,10 +100,10 @@ def query_database(method, query):
         query = Get(query=query)
         return query.contents_
     elif method == 'POST':
-        # query = Post(query=query)  # Single-threaded operation
-        databunch = build_databunch(query=query, num_splits=num_splits) # Split data
-        p = Pool(len(databunch))
-        p.map(run_post, databunch)
+        run_post(query=query)  # Single-threaded operation
+        # databunch = build_databunch(query=query, num_splits=num_splits) # Split data
+        # p = Pool(len(databunch))
+        # p.map(run_post, databunch)
 
     return {'message': 'POST received and executed'}
 
