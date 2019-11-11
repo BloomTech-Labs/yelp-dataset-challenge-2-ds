@@ -149,7 +149,7 @@ df['tip_id'] = df.apply(generate_id, axis=1)
 package = df_to_query(df=df, tablename='tips')
 
 # Build databunch for more smaller requests
-databunch = build_databunch(package, max_size=1000)
+databunch = build_databunch(package, max_size=100)
 
 for bunch in databunch:
     batch_size = len(bunch['data'])

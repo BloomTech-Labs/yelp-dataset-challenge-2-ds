@@ -93,6 +93,8 @@ def setup_aws(key_id=None, secret_key=None, region=None):
         Stores credentials in ~/.aws/credentials
     """
     # Build credentials file
+    aws_access_key_id = key_id
+    aws_secret_access_key = secret_key
     if key_id is None:
         aws_access_key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
     if secret_key is None:
