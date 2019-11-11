@@ -16,8 +16,10 @@ import logging
 ###########
 ###Setup###
 ###########
-from instance import setup
-setup.setup_env()
+# Local Environment Testing Only.
+#   Un-comment to build enviorment script in instance folder.
+# from instance import setup
+# setup.setup_env()
 
 # Set database name
 local_db_name = 'test.sqlite3'  # Change this or override with config.py file in instance/
