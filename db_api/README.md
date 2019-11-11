@@ -26,27 +26,39 @@ This is the database management system for the Yelp Dataset Challenge. All GET, 
 
 **Example:**
 
-```python
+
 import requests
+
 import pandas as pd
+
 from snippets import df_to_query
 
+
 df = pd.read_parquet('sample_users.parquet')
+
 package = df_to_query(df=df.head(1000), tablename='users')
+
 batch_size = len(package['data'])
 
+
 start = time.time()
+
 request = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
+
 print(request)
+
 stop = time.time()
+
 print('Batch of {} processed in {}'.format(batch_size, stop-start))
-```
+
+
 
 OUTPUT:
-```
+
 <Response [200]>
+
 Batch of 1000 processed in 12.668339490890503
-```
+
 
 * Note: requests object will not execute until an attribute is called.  here it executes when the print statement looks for a response code.
 
