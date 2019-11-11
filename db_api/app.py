@@ -15,6 +15,8 @@ import logging
 ###########
 ###Setup###
 ###########
+from instance import setup
+setup.setup_env()
 
 # Set database name
 local_db_name = 'test.sqlite3'  # Change this or override with config.py file in instance/
@@ -47,6 +49,9 @@ def create_app(test_config=None):
     import db
     db.init_app(app)
 
+    #  Bring in query methods
+    import query
+
     ############
     ###Routes###
     ############
@@ -59,7 +64,7 @@ def create_app(test_config=None):
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
     @app.route('/api/data/', methods=['GET', 'POST'])
-    @cache.cached(timeout=10)  # Agressive cache timeout.
+    # @cache.cached(timeout=10)  # Agressive cache timeout.  DEBUG remove caching to see about repear requests
     def data():
         # Parse request
         if request.method == 'GET':
@@ -67,13 +72,13 @@ def create_app(test_config=None):
                 raise InvalidUsage(message="Search query not provided")
             # Pass json portion of request to database query handler
             search_request = request.json
-            search_response = db.query_database(method='GET', query=search_request)
+            search_response = query.query_database(method='GET', query=search_request)
         elif request.method == 'POST':
             if not request.json:
                 raise InvalidUsage(message="Post JSON data not provided")
             # Pass json portion of request to database query handler
             search_request = request.json
-            search_response = db.query_database(method='POST', query=search_request)
+            search_response = query.query_database(method='POST', query=search_request)
         else:
             raise InvalidUsage(message="Incorrect request type")
 
@@ -83,6 +88,8 @@ def create_app(test_config=None):
     ###Logging###
     #############
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
+    # May significantly impair performance if writing logfile to disk (or network drive).
+    # To enable different services, see README.md
     logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)
     logging.getLogger('flask_cors').level = logging.INFO
 

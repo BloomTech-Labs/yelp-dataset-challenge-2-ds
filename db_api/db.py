@@ -7,8 +7,8 @@ Database
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from contextlib import contextmanager
 from models import *
-from query import *
 
 import click
 from flask import current_app, g
@@ -25,11 +25,11 @@ def get_db():
     """
     db_logger = logging.getLogger(__name__ + '.getdb')
     if 'db' not in g:
-        db_logger.info('DB connection not found. Attempting connection.')
+        db_logger.info('DB connection not found. Attempting connection to {}.'.format(current_app.config['DATABASE_URI']))
         try:
-            engine = create_engine(current_app.config['DATABASE_URI'], echo=True)
-            g.db_engine = engine.connect()
-            g.db = scoped_session(sessionmaker(bind=g.db_engine))  # Create thread-local session
+            engine = create_engine(current_app.config['DATABASE_URI'])
+            g.db = engine.connect()
+            # g.db = scoped_session(sessionmaker(bind=engine.connect()))  # Create thread-local session
         except:
             db_logger.error('Could not establish connection.  Aborting.')
             raise ConnectionError
@@ -37,16 +37,25 @@ def get_db():
     return g.db
 
 
+@contextmanager
+def get_session():
+    # Setup session with thread engine.
+    #   Allows for usage: with get_session() as session: session...
+    engine = get_db()
+    session = scoped_session(sessionmaker(bind=engine))
+    yield session
+
+
 def close_db(e=None):
     db = g.pop('db', None)
 
     if db is not None:
-        db.remove()
+        db.close()
 
 
 def init_db():
     db = get_db()
-    Base.metadata.create_all(g.db_engine)
+    Base.metadata.create_all(db)
 
 @click.command('init-db')
 @with_appcontext
@@ -59,23 +68,3 @@ def init_db_command():
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
-
-
-def query_database(method, query):
-    """Query handler for sqlalchemy database.  Parse tablename and direct query.
-    """
-    query_logger = logging.getLogger(__name__ + '.query_database')
-    query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
-    query_logger.info(query)
-
-    session = get_db()
-
-    if method == 'GET':
-        query = Get(session=session, query=query)
-        query.execute()
-        return query.contents_
-    elif method == 'POST':
-        query = Post(session=session, query=query)
-        query.execute()
-
-    return {'message': 'POST received and executed'}

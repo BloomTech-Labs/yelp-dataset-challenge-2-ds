@@ -16,7 +16,7 @@ from sqlalchemy.orm import relationship
 class Business(Base):
     __tablename__ = 'businesses'
 
-    businessid = Column(String, primary_key=True)
+    business_id = Column(String, primary_key=True)
     name = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
@@ -27,25 +27,14 @@ class Business(Base):
     attributes = Column(String)
     categories = Column(String)
 
-    """ Default values if needed
-    default='none')
-    default=0.0)
-    default=0.0)
-    default=0)
-    default=9999)
-    default=9999)
-    default=0)
-    default='none')
-    default='none')
-    """
 
 class User(Base):
     __tablename__ = 'users'
 
-    userid = Column(String, primary_key=True)
+    user_id = Column(String, primary_key=True)
     name = Column(String)
-    reviewcount = Column(Integer)
-    averagestars = Column(Float)
+    review_count = Column(Integer)
+    average_stars = Column(Float)
     weight = Column(Float)
     friends = Column(Text)
     yelping_since = Column(DateTime)
@@ -70,45 +59,46 @@ class User(Base):
 class Checkin(Base):
     __tablename__ = 'checkins'
 
-    checkinid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    checkin_id = Column(String, primary_key=True)
+    dates = Column(Text)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Photo(Base):
     __tablename__ = 'photos'
 
-    photoid = Column(String, primary_key=True)
+    photo_id = Column(String, primary_key=True)
     caption = Column(String)
     label = Column(String)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Tip(Base):
     __tablename__ = 'tips'
 
-    tipid = Column(String, primary_key=True)
-    compliment = Column(Integer)
-    datetime = Column(DateTime)
+    tip_id = Column(String, primary_key=True)
+    compliment_count = Column(Integer)
+    date = Column(DateTime)
     text = Column(Text)
     token = Column(Text)
-    tokenvector = Column(Text)
+    token_vector = Column(Text)
     ngram = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
 
 
 class Review(Base):
     __tablename__ = 'reviews'
 
-    reviewid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
+    review_id = Column(String, primary_key=True)
+    date = Column(DateTime)
     cool = Column(Integer)
     funny = Column(Integer)
+    useful = Column(Integer)
     stars = Column(Float)
     text = Column(Text)
-    tokenvector = Column(Text)
+    token_vector = Column(Text)
     token = Column(Text)
     ngram = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
