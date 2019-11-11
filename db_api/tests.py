@@ -105,7 +105,7 @@ def df_to_query(df, tablename):
 
 # Users
 df = pd.read_parquet('sample_users.parquet')
-package = df_to_query(df=df.head(100), tablename='users')
+package = df_to_query(df=df.head(1000), tablename='users')
 batch_size = len(package['data'])
 
 start = time.time()
