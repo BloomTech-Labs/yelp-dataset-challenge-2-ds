@@ -109,7 +109,7 @@ package = df_to_query(df=df.head(100), tablename='users')
 batch_size = len(package['data'])
 
 start = time.time()
-request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data/', json=package)
+request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
 print(request2)
 stop = time.time()
 print('Batch of {} processed in {}'.format(batch_size, stop-start))
