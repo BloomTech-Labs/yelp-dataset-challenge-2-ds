@@ -34,7 +34,6 @@ local_db_name = 'test.sqlite3'  # Change this or override with config.py file in
 def create_app(test_config=None):
     # Create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    app_logger = logging.getLogger(__name__)
     # If environment vairables not set, will default to development expected paths and names
     app.config.from_mapping(
         DEBUG=config('DEBUG', default=True),  # Make sure to change debug to False in production env
@@ -96,9 +95,10 @@ def create_app(test_config=None):
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
     # May significantly impair performance if writing logfile to disk (or network drive).
     # To enable different services, see README.md
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG) #  Console logging
+    logging.basicConfig() #  Default logging behavior
     # logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)  # File logging
     logging.getLogger('flask_cors').level = logging.INFO
+    app_logger = logging.getLogger(__name__)
 
     ############################
     ###Register Error Handles###
