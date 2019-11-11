@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool as Pool
 from models import *
 from db import get_session
 from flask import current_app, g
