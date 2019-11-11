@@ -91,8 +91,8 @@ def create_app(test_config=None):
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
     # May significantly impair performance if writing logfile to disk (or network drive).
     # To enable different services, see README.md
-    # logging.basicConfig(stream=sys.stdout, level=logging.INFO) #  Console logging
-    logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)  # File logging
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO) #  Console logging
+    # logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)  # File logging
     logging.getLogger('flask_cors').level = logging.INFO
 
     ############################
