@@ -45,3 +45,27 @@ def generate_id(record):
     # Encode record to bytes
     record = record.encode()
     return hashlib.sha256(json.dumps(record)).hexdigest()
+
+
+def build_databunch(query, num_splits=3, max_size=None):
+    import math
+    databunch = []
+
+    # Caclulate number or splits or set (dependent on max_size)
+    if max_size:
+        num_splits = math.ceil(len(query['data'])/max_size)
+
+    bunch_size = int(len(query['data']) / num_splits)
+
+    for i in range(num_splits):
+        if i < num_splits-1:
+            data_range = (i*bunch_size, (i+1)*bunch_size)
+        else:
+            data_range = (i*bunch_size, len(query['data']))
+        databunch.append(
+            {
+                'table_name': query['table_name'],
+                'data': query['data'][data_range[0]:data_range[1]]
+            }
+        )
+    return databunch

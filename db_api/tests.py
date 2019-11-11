@@ -48,6 +48,30 @@ def df_to_query(df, tablename):
 
     return package
 
+
+def build_databunch(query, num_splits=3, max_size=None):
+    import math
+    databunch = []
+
+    # Caclulate number or splits or set (dependent on max_size)
+    if max_size:
+        num_splits = math.ceil(len(query['data'])/max_size)
+
+    bunch_size = int(len(query['data']) / num_splits)
+
+    for i in range(num_splits):
+        if i < num_splits-1:
+            data_range = (i*bunch_size, (i+1)*bunch_size)
+        else:
+            data_range = (i*bunch_size, len(query['data']))
+        databunch.append(
+            {
+                'table_name': query['table_name'],
+                'data': query['data'][data_range[0]:data_range[1]]
+            }
+        )
+    return databunch
+
 ###########
 ###Tests###
 ###########
@@ -103,16 +127,16 @@ def df_to_query(df, tablename):
 
 # TEST 3: Load sample_users.json and attempt time writing to db.
 
-# Users
-df = pd.read_parquet('sample_users.parquet')
-package = df_to_query(df=df.head(1000), tablename='users')
-batch_size = len(package['data'])
+# # Users
+# df = pd.read_parquet('sample_users.parquet')
+# package = df_to_query(df=df, tablename='users')
+# batch_size = len(package['data'])
 
-start = time.time()
-request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
-print(request2)
-stop = time.time()
-print('Batch of {} processed in {}'.format(batch_size, stop-start))
+# start = time.time()
+# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
+# print(request2)
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 
 # # Tips
@@ -122,18 +146,18 @@ print('Batch of {} processed in {}'.format(batch_size, stop-start))
 # batch_size = len(package['data'])
 
 # start = time.time()
-# request3 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# request3 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
 # print(request3)
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 # # Reviews
 # df = pd.read_parquet('sample_reviews.parquet')
-# package = df_to_query(df=df, tablename='reviews')
+# package = df_to_query(df=df.head(1000), tablename='reviews')
 # batch_size = len(package['data'])
 
 # start = time.time()
-# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
 # print(request2)
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
@@ -146,7 +170,7 @@ print('Batch of {} processed in {}'.format(batch_size, stop-start))
 # batch_size = len(package['data'])
 
 # start = time.time()
-# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
 # print(request2)
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
@@ -157,7 +181,7 @@ print('Batch of {} processed in {}'.format(batch_size, stop-start))
 # batch_size = len(package['data'])
 
 # start = time.time()
-# request2 = requests.post(url='http://localhost:5000/api/data/', json=package)
+# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
 # print(request2)
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
