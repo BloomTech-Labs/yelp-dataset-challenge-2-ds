@@ -1,0 +1,36 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+beautifulsoup4 = "*"
+boto3 = "*"
+dask = "*"
+distributed = "*"
+joblib = "*"
+matplotlib = "*"
+numpy = "*"
+pandas = "*"
+pyarrow = "*"
+pylint = "*"
+python-decouple = "*"
+requests = "*"
+scikit-learn = "*"
+scipy = "*"
+ujson = "*"
+jupyter = "*"
+Faker = "*"
+Pillow = "*"
+flask = "*"
+gunicorn = "*"
+flask-cors = "*"
+sqlalchemy = "*"
+flask-sqlalchemy = "*"
+psycopg2 = "*"
+python-dotenv = "*"
+
+[requires]
+python_version = "3.7"
