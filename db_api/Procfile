@@ -1,1 +1,1 @@
-web: gunicorn app:app --preload
+web: gunicorn --workers=2 --log-level=debug app:app
