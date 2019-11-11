@@ -59,6 +59,13 @@ You can change this to DEBUG by modifying the following line:
 
 > Change default save location by modifying the filename attribute in line referenced above.  **filename=<insert_filename_here>**
 
+
+## Deploying
+
+Deploy only this subfolder.  If part of a larger repository, use the following:
+
+> git subtree push --prefix db_api heroku master
+
 #### Special Thanks
 
 It can be hard to get eyes on a project to guide it's feature development.  I want to give special thanks to the data scientists who took a minute to walk through pain points and features they'd like to see.  Got most of it in.
