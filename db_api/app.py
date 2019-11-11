@@ -68,7 +68,7 @@ def create_app(test_config=None):
             return render_markdown('README.md')
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
-    @app.route('/api/data/', methods=['GET', 'POST'])
+    @app.route('/api/data', methods=['GET', 'POST'])
     # @cache.cached(timeout=10)  # Agressive cache timeout.  DEBUG remove caching to see about repear requests
     def data():
         # Parse request
