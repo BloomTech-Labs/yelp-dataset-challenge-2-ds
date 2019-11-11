@@ -12,8 +12,6 @@ from errors import InvalidUsage
 
 # Logging
 import logging
-from logging import StreamHandler
-file_handler = StreamHandler()
 
 ###########
 ###Setup###
@@ -97,9 +95,8 @@ def create_app(test_config=None):
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
     # May significantly impair performance if writing logfile to disk (or network drive).
     # To enable different services, see README.md
-    # gunicorn_logger = logging.getLogger('gunicorn.error')
-    # app.logger.handlers = gunicorn_logger.handlers
-    app.logger.handlers = StreamHandler()
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
     # logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)  # File logging
     logging.getLogger('flask_cors').level = logging.INFO
     app_logger = logging.getLogger(__name__)
