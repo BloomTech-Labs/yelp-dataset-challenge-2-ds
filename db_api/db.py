@@ -8,6 +8,7 @@ Database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models import *
+from query import *
 
 import click
 from flask import current_app, g
@@ -60,8 +61,21 @@ def init_app(app):
     app.cli.add_command(init_db_command)
 
 
-def query_database(query_string):
+def query_database(method, query):
+    """Query handler for sqlalchemy database.  Parse tablename and direct query.
     """
-    General function for querying matching data from predictors.
-    """
-    raise NotImplementedError
+    query_logger = logging.getLogger(__name__ + '.query_database')
+    query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
+    query_logger.info(query)
+
+    session = get_db()
+
+    if method == 'GET':
+        query = Get(session=session, query=query)
+        query.execute()
+        return query.contents_
+    elif method == 'POST':
+        query = Post(session=session, query=query)
+        query.execute()
+
+    return {'message': 'POST received and executed'}
