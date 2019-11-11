@@ -127,16 +127,20 @@ def build_databunch(query, num_splits=3, max_size=None):
 
 # TEST 3: Load sample_users.json and attempt time writing to db.
 
-# # Users
-# df = pd.read_parquet('sample_users.parquet')
-# package = df_to_query(df=df, tablename='users')
-# batch_size = len(package['data'])
+# Users
+df = pd.read_parquet('sample_users.parquet')
+package = df_to_query(df=df, tablename='users')
 
-# start = time.time()
-# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
-# print(request2)
-# stop = time.time()
-# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+# Build databunch for more smaller requests
+databunch = build_databunch(package, max_size=1000)
+
+for bunch in databunch:
+    batch_size = len(bunch['data'])
+    start = time.time()
+    request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=bunch)
+    print(request2)
+    stop = time.time()
+    print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 
 # # Tips
