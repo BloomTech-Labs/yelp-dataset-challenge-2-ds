@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing import Pool
 from models import *
 from db import get_session
 from flask import current_app, g
@@ -91,7 +91,7 @@ def query_database(method, query):
     query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
     query_logger.debug(query)
 
-    num_splits = 8  # multi-threaded session operation
+    num_splits = 2  # multi-threaded session operation
     # Check query data size.  If small enough, this number of splits may cause pool issues.
     if len(query['data']) < num_splits:
         num_splits = len(query['data'])
