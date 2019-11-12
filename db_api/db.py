@@ -43,7 +43,10 @@ def get_session():
     #   Allows for usage: with get_session() as session: session...
     engine = get_db()
     session = scoped_session(sessionmaker(bind=engine))
-    yield session
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 def close_db(e=None):
