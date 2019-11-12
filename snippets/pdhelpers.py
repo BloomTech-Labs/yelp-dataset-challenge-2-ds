@@ -69,3 +69,50 @@ def build_databunch(query, num_splits=3, max_size=None):
             }
         )
     return databunch
+
+
+######################
+###Request Handling###
+######################
+
+import logging
+import os
+request_logger = logging.getLogger(__name__+" request:")
+log_path = os.path.join(os.getcwd(), 'instance/logs/debug.log')
+logging.basicConfig(filename=log_path, level=logging.INFO)
+def parallel_post_requests(databunch, url, max_requests=10):
+    """Request handler that will parallelize databunch POST requests.
+
+    param databunch: Packages to POST to database API
+    type databunch: list of packages
+    param max_requests: How many simultaneous requests sessions to attempt
+    type max_requests: int
+    param url: Endpoint url.  Must be valid ipv4 or dns entry.
+    type url: string
+    """
+    # Move imports to top of file for performance.
+    from multiprocessing import Pool
+    from functools import partial
+
+    runner = partial(run_request, url=url)
+    p = Pool(max_requests)
+    p.map(runner, databunch)
+
+
+def run_request(bunch, url):
+    """Run and time a request with the python requests library
+    """
+    import requests
+    import time
+    import numpy as np
+    try:
+        time.sleep(np.random.random_sample())
+        start = time.time()
+        requests.post(url=url, json=bunch)
+        request_logger.info("POST succeded")
+        stop = time.time()
+        request_logger.info('Batch of {} processed in {}'.format(len(bunch), stop-start))
+        return True
+    except:
+        request_logger.error("POST failed.  Trying again")
+        run_request(bunch=bunch, url=url)
