@@ -7,13 +7,10 @@ from .models import DB, reviews
 def count(docs):
 
         word_counts = Counter()
-        appears_in = Counter()
-        
         total_docs = len(docs)
 
         for doc in docs:
             word_counts.update(doc)
-            appears_in.update(set(doc))
 
         temp = zip(word_counts.keys(), word_counts.values())
         
@@ -26,11 +23,7 @@ def count(docs):
         
         wc = wc.sort_values(by='rank')
 
-        t2 = zip(appears_in.keys(), appears_in.values())
-        ac = pd.DataFrame(t2, columns=['word', 'appears_in'])
-        wc = ac.merge(wc, on='word')
-        
-        return wc.sort_values(by='rank')
+        return wc
 
 
 def timeseries(bus_id):
