@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 # from multiprocessing import Pool
 from models import *
-from db import get_session
+from db import get_session, get_db
 from flask import current_app, g
 import numpy as np
 import time
@@ -56,8 +56,16 @@ class Query():
 class Get(Query):
     def __init__(self, query):
         super().__init__(query)
-        query_logger.debug('GET query created.')
-        self.contents_ = None  # Generate from execution step
+        query_logger.info('GET query created.')
+        self.maker = assign_maker(query['schema'])
+        query_logger.info('Maker for schema {} initialized'.format(query['schema']))
+        self.execute(query['params'])
+
+    def execute(self, params):
+        assert type(params) == dict
+        query_logger.info('GET query launching params = {}'.format(params))
+        with get_session() as session:
+            self.response = self.maker(session=session, params=params)
 
 
 class Post(Query):
@@ -98,7 +106,7 @@ def query_database(method, query):
 
     if method == 'GET':
         query = Get(query=query)
-        return query.contents_
+        return query.response
     elif method == 'POST':
         run_post(query=query)  # Single-threaded operation
         # databunch = build_databunch(query=query, num_splits=num_splits) # Split data
@@ -149,8 +157,9 @@ def build_databunch(query, num_splits=3):
 ###########################
 ###Make Instance Methods###
 ###########################
+
 # TODO: Collapse into single makre factory that calls proper class
-def assign_maker(table_name):
+def assign_maker(schema):
     makers = {
         'businesses': make_or_update_business,
         'users': make_or_update_user,
@@ -158,8 +167,9 @@ def assign_maker(table_name):
         'photos': make_or_update_photo,
         'tips': make_or_update_tip,
         'reviews': make_or_update_review,
+        'biz_words': biz_words,
     }
-    return makers[table_name]
+    return makers[schema]
 
 
 def make_or_update_business(session, record, *args, **kwargs):
@@ -220,3 +230,12 @@ def make_or_update_review(session, record, *args, **kwargs):
         session.add(Review(**record))
     else:
         session.query(Review).filter_by(review_id=record['review_id']).update(record)
+
+
+# GET ENDPOINT FUNCTIONS #
+# ------------------------
+
+def biz_words(session, params, *args, **kwargs):
+    response = session.query(Review.date, Review.token, Review.stars).\
+        filter(Review.business_id==params['business_id'])
+    return {'data': response.all()}
