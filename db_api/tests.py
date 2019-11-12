@@ -104,12 +104,13 @@ def run_request(bunch, url):
     import time
     import numpy as np
     try:
-        time.sleep(np.random.random_sample())
+        time.sleep(np.random.random_sample()*10)
         start = time.time()
-        requests.post(url=url, json=bunch)
-        request_logger.info("POST succeded")
+        response = requests.post(url=url, json=bunch)
+        assert response.status_code == 200
+        request_logger.info("POST succeded.  Status= {}".format(response.status_code))
         stop = time.time()
-        request_logger.info('Batch of {} processed in {}'.format(len(bunch), stop-start))
+        request_logger.info('Batch of {} processed in {}'.format(len(bunch['data']), stop-start))
         return True
     except:
         request_logger.error("POST failed.  Trying again")
@@ -186,50 +187,83 @@ def run_request(bunch, url):
 #     print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 
-# Tips
-df = pd.read_parquet('sample_tips.parquet')
-df['tip_id'] = df.apply(generate_id, axis=1)
-package = df_to_query(df=df, tablename='tips')
-
-# Build databunch for more smaller requests
-databunch = build_databunch(package, max_size=100)
-
-parallel_post_requests(
-    databunch=databunch,
-    url='https://db-api-yelp18-staging.herokuapp.com/api/data',
-    max_requests=10
-    )
-# # Reviews
-# df = pd.read_parquet('sample_reviews.parquet')
-# package = df_to_query(df=df.head(1000), tablename='reviews')
+# # Tips
+# df = pd.read_parquet('sample_tips.parquet')
+# df['tip_id'] = df.apply(generate_id, axis=1)
+# package = df_to_query(df=df, tablename='tips')
 # batch_size = len(package['data'])
 
+# # Build databunch for more smaller requests
+# databunch = build_databunch(package, max_size=100)
+
 # start = time.time()
-# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
-# print(request2)
+
+# parallel_post_requests(
+#     databunch=databunch,
+#     url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+#     max_requests=20
+#     )
+
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
 
 # # Checkins
 # df = pd.read_parquet('sample_checkins.parquet')
 # df['checkin_id'] = df.apply(generate_id, axis=1)
-# df = df.rename(columns={'date': 'dates'})
+# df = df.rename(columns={'date':'dates'})
 # package = df_to_query(df=df, tablename='checkins')
 # batch_size = len(package['data'])
 
+# # Build databunch for more smaller requests
+# databunch = build_databunch(package, max_size=200)
+
 # start = time.time()
-# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
-# print(request2)
+
+# parallel_post_requests(
+#     databunch=databunch,
+#     url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+#     max_requests=20
+#     )
+
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
-# # Photos
-# df = pd.read_parquet('sample_photos.parquet')
-# package = df_to_query(df=df, tablename='photos')
+# # Reviews
+# df = pd.read_parquet('sample_reviews.parquet')
+# package = df_to_query(df=df, tablename='reviews')
 # batch_size = len(package['data'])
 
+# # Build databunch for more smaller requests
+# databunch = build_databunch(package, max_size=200)
+
 # start = time.time()
-# request2 = requests.post(url='https://db-api-yelp18-staging.herokuapp.com/api/data', json=package)
-# print(request2)
+
+# parallel_post_requests(
+#     databunch=databunch,
+#     url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+#     max_requests=10
+#     )
+
 # stop = time.time()
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+
+# Photos
+df = pd.read_parquet('sample_photos.parquet')
+package = df_to_query(df=df, tablename='photos')
+batch_size = len(package['data'])
+
+# Build databunch for more smaller requests
+databunch = build_databunch(package, max_size=200)
+
+start = time.time()
+
+parallel_post_requests(
+    databunch=databunch,
+    url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+    max_requests=15
+    )
+
+stop = time.time()
+print('Batch of {} processed in {}'.format(batch_size, stop-start))

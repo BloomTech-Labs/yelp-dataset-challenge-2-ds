@@ -108,8 +108,9 @@ def run_request(bunch, url):
     try:
         time.sleep(np.random.random_sample())
         start = time.time()
-        requests.post(url=url, json=bunch)
-        request_logger.info("POST succeded")
+        response = requests.post(url=url, json=bunch)
+        assert response.status_code == 200
+        request_logger.info("POST succeded.  Status= {}".format(response.status_code))
         stop = time.time()
         request_logger.info('Batch of {} processed in {}'.format(len(bunch), stop-start))
         return True
