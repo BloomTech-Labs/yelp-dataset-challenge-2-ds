@@ -92,6 +92,8 @@ def setup_aws(key_id=None, secret_key=None, region=None):
     Interactive config file creation.
         Stores credentials in ~/.aws/credentials
     """
+    key_id = 'aws_access_key_id = ' + key_id
+    secret_key = 'aws_secret_access_key = ' + secret_key
 
     if key_id is None:
         key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
