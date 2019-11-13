@@ -45,6 +45,7 @@ class Bucket():
     def save(self, file_name, object_name=None):
         upload_file(file_name, self.bucket_name, object_name=object_name)
 
+
     def dir(self, all=False):
         if all:
             keys = []
@@ -53,8 +54,39 @@ class Bucket():
             return keys
         return get_bucket_keys(self.bucket_name)
 
+    def get_dir_contents(self, dir):
+        with get_client() as conn:
+            objects = conn.list_objects_v2(Bucket=self.bucket_name, Prefix=dir)['Contents']
+            contents = []
+            for key in objects:
+                contents.append(key)
+            
+        # If the search returned something, slice off the first result because that will be the directory itself
+        if contents != []:
+            return contents[1:]
+
+        else:
+            raise NameError("No directory starts with " + dir + " prefix.")
+
     def find(self, prefix="", suffix=""):
-        return get_matching_s3_objects(self.bucket_name, prefix="", suffix="")
+        return get_matching_s3_objects(self.bucket_name, prefix, suffix)
+
+    def delete_object(self, object_name):
+    #     """Delete an object from an S3 bucket
+
+    #     :param bucket_name: string
+    #     :param object_name: string
+    #     :return: True if the referenced object was deleted, otherwise False
+    #     """
+
+        # Delete the object
+        s3 = boto3.client('s3')
+        try:
+            s3.delete_object(Key=object_name, Bucket=self.bucket_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        return True
 
 
 class ProgressPercentage(object):
@@ -299,6 +331,10 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
                 bucket_name, object_name, save_name
                 )
 
+# Not currently working, maybe helpful for reading jobs
+# def download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None)
+#         s3.download_fileobj(Bucket, Key, data)
+
 
 def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
     """
@@ -313,6 +349,7 @@ def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
         if key.startswith(prefix) and key.endswith(suffix):
             yield key
     return response
+
 
 ## Adaped from https://alexwlchan.net/2019/07/listing-s3-keys/
 ## Special thanks to Alex Chan
