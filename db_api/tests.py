@@ -269,7 +269,7 @@ def run_request(bunch, url):
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 # TEST 4 GET Requests
-url='http://localhost:5000/api/data'
+url='https://db-api-yelp18-staging.herokuapp.com/api/data'
 
 # 4.A data_viz get request
 package = {
