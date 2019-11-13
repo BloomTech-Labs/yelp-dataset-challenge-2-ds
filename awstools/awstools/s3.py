@@ -92,8 +92,7 @@ class Bucket():
             search=search,
             prefix=prefix,
             suffix=suffix)
-
-
+            
 class ProgressPercentage(object):
     def __init__(self, filename):
         self._filename = filename
