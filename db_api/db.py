@@ -29,7 +29,6 @@ def get_db():
         try:
             engine = create_engine(current_app.config['DATABASE_URI'])
             g.db = engine.connect()
-            # g.db = scoped_session(sessionmaker(bind=engine.connect()))  # Create thread-local session
         except:
             db_logger.error('Could not establish connection.  Aborting.')
             raise ConnectionError
@@ -43,7 +42,10 @@ def get_session():
     #   Allows for usage: with get_session() as session: session...
     engine = get_db()
     session = scoped_session(sessionmaker(bind=engine))
-    yield session
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 def close_db(e=None):

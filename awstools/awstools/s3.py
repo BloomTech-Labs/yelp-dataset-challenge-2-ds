@@ -92,11 +92,13 @@ def setup_aws(key_id=None, secret_key=None, region=None):
     Interactive config file creation.
         Stores credentials in ~/.aws/credentials
     """
-    # Build credentials file
+    key_id = 'aws_access_key_id = ' + key_id
+    secret_key = 'aws_secret_access_key = ' + secret_key
+
     if key_id is None:
-        aws_access_key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
+        key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
     if secret_key is None:
-        aws_secret_access_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
+        secret_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
 
     # Set config
     profile = '[default]'
@@ -113,7 +115,7 @@ def setup_aws(key_id=None, secret_key=None, region=None):
     root_path = os.path.join(os.getcwd(), '.aws')
     cred_path = root_path + '/credentials'
     config_path = root_path + '/config'
-    create_file(cred_path, "\n".join([profile, aws_access_key_id, aws_secret_access_key]))
+    create_file(cred_path, "\n".join([profile, key_id, secret_key]))
     create_file(config_path, "\n".join([profile, region]))
     # Load env files
     load_aws_environment(credential_file=cred_path, profile='default')
