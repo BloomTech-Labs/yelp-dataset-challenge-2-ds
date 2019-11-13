@@ -249,21 +249,35 @@ def run_request(bunch, url):
 # print('Batch of {} processed in {}'.format(batch_size, stop-start))
 
 
-# Photos
-df = pd.read_parquet('sample_photos.parquet')
-package = df_to_query(df=df, tablename='photos')
-batch_size = len(package['data'])
+# # Photos
+# df = pd.read_parquet('sample_photos.parquet')
+# package = df_to_query(df=df.head(15), tablename='photos')
+# batch_size = len(package['data'])
 
-# Build databunch for more smaller requests
-databunch = build_databunch(package, max_size=200)
+# # Build databunch for more smaller requests
+# databunch = build_databunch(package, max_size=200)
 
-start = time.time()
+# start = time.time()
 
-parallel_post_requests(
-    databunch=databunch,
-    url='https://db-api-yelp18-staging.herokuapp.com/api/data',
-    max_requests=15
-    )
+# parallel_post_requests(
+#     databunch=databunch,
+#     url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+#     max_requests=15
+#     )
 
-stop = time.time()
-print('Batch of {} processed in {}'.format(batch_size, stop-start))
+# stop = time.time()
+# print('Batch of {} processed in {}'.format(batch_size, stop-start))
+
+# TEST 4 GET Requests
+url='https://db-api-yelp18-staging.herokuapp.com/api/data'
+
+# 4.A data_viz get request
+package = {
+    'schema': 'biz_words',
+    'params': {
+        'business_id': 'ajoqEHnCZTD8-8GqGLq9-Q'
+        },
+}
+response = requests.get(url=url, json=package)
+print('Status: ', response.status_code)
+print('Content: ', response.text)

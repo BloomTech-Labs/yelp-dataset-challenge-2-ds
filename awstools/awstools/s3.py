@@ -5,6 +5,7 @@ S3 is an abstraction layer for working with s3 buckets. Uses helper functions to
 import boto3
 from boto3.s3.transfer import S3Transfer
 from botocore.exceptions import ClientError
+from io import BytesIO, TextIOWrapper
 import logging
 import os
 import sys
@@ -68,9 +69,6 @@ class Bucket():
         else:
             raise NameError("No directory starts with " + dir + " prefix.")
 
-    def find(self, prefix="", suffix=""):
-        return get_matching_s3_objects(self.bucket_name, prefix, suffix)
-
     def delete_object(self, object_name):
     #     """Delete an object from an S3 bucket
 
@@ -87,6 +85,13 @@ class Bucket():
             logging.error(e)
             return False
         return True
+
+    def find(self, search=None, prefix=None, suffix=None):
+        return get_matching_s3_keys(
+            bucket_contents=self.contents,
+            search=search,
+            prefix=prefix,
+            suffix=suffix)
 
 
 class ProgressPercentage(object):
@@ -320,11 +325,15 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
     #   Invokes S3Transfer method for
     with get_client() as connection:
         if save_name is None:
-            file_obj = connection.get_object(
+            # Create filestream to store temporary object
+            file_stream = BytesIO()
+            connection.download_fileobj(
                 Bucket=bucket_name,
-                Key=object_name
+                Key=object_name,
+                Fileobj=file_stream
                 )
-            return file_obj['Body'].read().decode('utf-8')
+            return file_stream
+
         else:
             transfer = S3Transfer(connection)
             transfer.download_file(
@@ -390,7 +399,7 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
                     yield obj
 
 
-def get_matching_s3_keys(bucket, prefix="", suffix=""):
+def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None):
     """
     Generate the keys in an S3 bucket.
 
@@ -398,9 +407,34 @@ def get_matching_s3_keys(bucket, prefix="", suffix=""):
     :param prefix: Only fetch keys that start with this prefix (optional).
     :param suffix: Only fetch keys that end with this suffix (optional).
     """
-    for obj in get_matching_s3_objects(bucket, prefix, suffix):
-        yield obj["Key"]
+    find_list = []
+    for item in bucket_contents:
+        test_item = item
+        search_status = False
+        if search: # If general search, screen for term right away
+            if search in test_item:
+                find_list.append(test_item)
+                search_status = True # remember search hit to pop if necessary
+            else:
+                test_item = None
 
+        if prefix and test_item:
+            if test_item.startswith(prefix):
+                if not search_status:
+                    find_list.append(test_item)
+            else:
+                if search_status:
+                    find_list.pop()
+                test_item = None
+
+        if suffix and test_item:
+            if test_item.endswith(suffix):
+                if not search_status:
+                    find_list.append(test_item)
+            else:
+                if search_status:
+                    find_list.pop()
+    return find_list
 
 if __name__ == "__main__":
     pass

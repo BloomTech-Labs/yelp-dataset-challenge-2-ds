@@ -14,7 +14,29 @@ This is the database management system for the Yelp Dataset Challenge. All GET, 
 
 ## Usage
 
-### Making Requests
+### Making GET Requests
+
+**See get_requests.py** for dropin functions and examples.
+
+> params: schema
+
+> type: python dictionary (requests will turn to JSON object)
+
+**EXAMPLE**:
+
+package = {
+    'schema': 'biz_words',
+    'params': {
+        'business_id': 'ajoqEHnCZTD8-8GqGLq9-Q'
+        },
+}
+
+url = URL_OF_THIS_APPLICATION/api/data
+response = requests.get(url=url, json=package)
+print('Status: ', response.status_code)
+print('Content: ', response.text)
+
+### Making POST Requests
 
 *How to make requests in python*
 
