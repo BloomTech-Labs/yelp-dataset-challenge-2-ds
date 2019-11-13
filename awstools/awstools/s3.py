@@ -382,7 +382,8 @@ def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None)
 
         if prefix and test_item:
             if test_item.startswith(prefix):
-                find_list.append(test_item)
+                if not search_status:
+                    find_list.append(test_item)
             else:
                 if search_status:
                     find_list.pop()
@@ -390,7 +391,8 @@ def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None)
 
         if suffix and test_item:
             if test_item.endswith(suffix):
-                find_list.append(test_item)
+                if not search_status:
+                    find_list.append(test_item)
             else:
                 if search_status:
                     find_list.pop()
