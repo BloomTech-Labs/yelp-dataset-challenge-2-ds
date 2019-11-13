@@ -23,17 +23,21 @@ import os
 from awstools import s3
 
 # Setup AWS credentials and create local credential files.
-# s3.setup_aws()
+s3.setup_aws()
+
+> Function generates a '.aws' directory with credential files in it.  Credentials are not encrypted, so do not commmit that directory.
 
 # Initialize bucket
 bucket = s3.Bucket('yelp-data-shared-labs18')
 
-# Test download of file.  test.txt contains lorem ipsum text.
-bucket.get('test.txt', 'text.txt')
+# Test download of file
+bucket.get(object_name, save_name)
 
-# Test stream file (download to variable)
-text = bucket.get('test.txt')
-print(text)
+**Example:** Download 'test.txt' and save to 'text.txt'
+
+> bucket.get('test.txt', 'text.txt')
+
+
 
 # Test upload (saving)
 test_path = os.path.join(os.getcwd(), 'text.txt')

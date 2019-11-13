@@ -5,7 +5,7 @@ S3 is an abstraction layer for working with s3 buckets. Uses helper functions to
 import boto3
 from boto3.s3.transfer import S3Transfer
 from botocore.exceptions import ClientError
-import io
+from io import BytesIO, TextIOWrapper
 import logging
 import os
 import sys
@@ -294,10 +294,11 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
     with get_client() as connection:
         if save_name is None:
             # Create filestream to store temporary object
-            file_stream = io.StringIO()
-            transfer = S3Transfer(connection)
-            transfer.download_file(
-                bucket_name, object_name, file_stream
+            file_stream = BytesIO()
+            connection.download_fileobj(
+                Bucket=bucket_name,
+                Key=object_name,
+                Fileobj=file_stream
                 )
             return file_stream
 
