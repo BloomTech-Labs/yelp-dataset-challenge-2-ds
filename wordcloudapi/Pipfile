@@ -15,11 +15,6 @@ Flask-SQLAlchemy = "*"
 Flask = "*"
 Flask-Cors = "*"
 gunicorn = "*"
-dask = "*"
-toolz = "*"
-fsspec = ">=0.3.3"
-partd = "*"
-py = "*"
 
 [requires]
 python_version = "3.7"
