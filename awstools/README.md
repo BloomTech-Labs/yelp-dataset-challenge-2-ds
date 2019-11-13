@@ -37,7 +37,12 @@ bucket.get(object_name, save_name)
 
 > bucket.get('test.txt', 'text.txt')
 
+**Example:** Download binary type to memory and use directly
 
+download = bucket.get('sample_data/tip.parquet')
+import pandas as pd
+!pip install pyarrow
+pd.read_parquet(download).head()
 
 # Test upload (saving)
 test_path = os.path.join(os.getcwd(), 'text.txt')
