@@ -20,6 +20,11 @@ class g():
 
 g = g()
 
+
+############################
+###Data and File Handling###
+############################
+
 def route_data(filename):
     # Check filename for tablename and execute transform/validate function
     table_name = get_source_from_name(filename)
@@ -70,10 +75,11 @@ def generate_job(savepath, job_type):
         'Key': savepath
     }
     job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
-    with open(job_name, 'w') as file:
-        json.dump(job_data, file)
-    bucket.save(job_name, 'Jobs/{}'.format(job_name))
-    os.remove(job_name)
+    temp_job_path = '/tmp/'+job_name
+    with open(temp_job_path, 'w') as file:
+        json.dump(temp_job_path, file)
+    bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
+    os.remove(temp_job_path)
 
 
 def write_data(data, savepath, dry_run=True):
@@ -85,7 +91,7 @@ def write_data(data, savepath, dry_run=True):
         print(pd.read_parquet(file_stream).head())
     else:
         print('Commencing upload of {} to S3'.format(savepath))
-        tempfilename = savepath.split('/')[-1]
+        tempfilename = '/tmp/'+savepath.split('/')[-1]
         data.to_parquet(tempfilename)
         bucket = get_bucket()
         bucket.save(tempfilename, savepath)
@@ -145,20 +151,44 @@ def bin_dataframe(data, max_size):
         # print(binned_frames[i].tail(1))
     return binned_frames
 
+
 ##################################
 ###Transform Validate Functions###
 ##################################
 
 def tvf_business(filename):
-    pass
+    print('Beginning business data transformation.')
+    raise NotImplementedError
 
 
 def tvf_user(filename):
-    pass
+    print('Beginning user data transformation.')
+    data = load_data(filename)
+    savepaths = save_chunks(
+        data=data,
+        max_size=100000,
+        prefix='clean',
+        rootname='user',
+        path='Clean/',
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='POST')
 
 
 def tvf_checkin(filename):
-    pass
+    print('Beginning checkin data transformation.')
+    data = load_data(filename)
+    data['checkin_id'] = data.apply(generate_id, axis=1)
+    data = data.rename(columns={'date':'dates'})
+    savepaths = save_chunks(
+        data=data,
+        max_size=20000,
+        prefix='clean',
+        rootname='checkin',
+        path='Clean/',
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='POST')
 
 
 def tvf_photo(filename):
@@ -176,12 +206,32 @@ def tvf_photo(filename):
 
 
 def tvf_tips(filename):
-    pass
+    print('Beginning tip data transformation.')
+    data = load_data(filename)
+    data['tip_id'] = data.apply(generate_id, axis=1)
+    savepaths = save_chunks(
+        data=data,
+        max_size=100000,
+        prefix='clean',
+        rootname='tip',
+        path='Clean/',
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='NLP')
 
 
 def tvf_review(filename):
+    print('Beginning review data transformation.')
     data = load_data(filename)
-    return True
+    savepaths = save_chunks(
+        data=data,
+        max_size=50000,
+        prefix='clean',
+        rootname='review',
+        path='Clean/',
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='NLP')
 
 
 table_transformers = {
@@ -193,7 +243,41 @@ table_transformers = {
     'review': tvf_review,
 }
 
+######################
+###Helper Functions###
+######################
+
+def generate_id(record):
+    """Generate ID returns a repeatable hash of a given record.
+
+    param record: python string, list, or dictionary, pandas.series
+    type record: string
+    """
+    import hashlib
+    import pandas as pd
+    # Convert series to dictionary object for encoding
+    if type(record) == pd.Series:
+        record = str(record.to_dict())
+    else:
+        record = str(record)
+    # Encode record to bytes
+    record = record.encode()
+    return hashlib.sha256(record).hexdigest()
+
 
 if __name__ == "__main__":
-    filename = 'photo.json'
-    route_data(filename)
+    photos = 'photo.json'
+    tips = 'tip.json'
+    checkins = 'checkin.json'
+    reviews = 'review.json'
+    users = 'user.json'
+    businesses = 'business.json'
+
+    # route_data(checkins)
+    # route_data(tips)
+    route_data(users)
+    # route_data(reviews)
+    # route_data(businesses)
+
+    ## Completed 11/13/2019
+    #route_data(photos)
