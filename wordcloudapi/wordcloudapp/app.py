@@ -20,9 +20,7 @@ def create_app():
         data = request.get_json(force=True)
         predict_request = data['business_id']
         result = timeseries(predict_request)
-        output = result
-        return output
-
+        return jsonify(result)
 
     return app
 

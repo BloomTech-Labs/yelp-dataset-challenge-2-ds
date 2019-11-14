@@ -23,6 +23,7 @@ def timeseries(bus_id):
     df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
         str.split(', ')
     filtered = df.sort_values('date')
+    filtered = filtered.reset_index()
     filtered['bins'] = pd.qcut(filtered.index, q=10, precision=0)
     new_df = filtered.groupby('bins').agg({'tokens': 'sum', \
             'star_review': 'mean', 'date': lambda x: x.iloc[-1]})
@@ -40,6 +41,6 @@ def timeseries(bus_id):
     output = (df_final.groupby(['date'], as_index=True)
              .apply(lambda x: x[['word','count','pct_total','rank',\
                  'star_review']].to_dict('r'))
-              .to_json())
+              .to_json()).replace("'", "")
 
     return output
