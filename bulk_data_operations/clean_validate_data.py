@@ -8,17 +8,17 @@ If passes, saves data in defined chunks.
 """
 import pandas as pd
 from awstools import s3
+from math import ceil
+import os
+from io import BytesIO
+import json
 
 
-table_transformers = {
-    'businesses': tvf_business,
-    'users': tvf_user,
-    'checkins': tvf_checkin,
-    'photos': tvf_photo,
-    'tips': tvf_tips,
-    'reviews': tvf_review,
-}
+class g():
+    def __init__(self, bucket=None):
+        self.bucket=bucket
 
+g = g()
 
 def route_data(filename):
     # Check filename for tablename and execute transform/validate function
@@ -32,6 +32,15 @@ def route_data(filename):
     return False
 
 
+def get_bucket():
+    if g.bucket == None:
+        bucket = s3.Bucket('yelp-data-shared-labs18')
+        g.bucket = bucket
+        return g.bucket
+    else:
+        return g.bucket
+
+
 def get_source_from_name(filename):
     for table_name in table_transformers.keys():
         if table_name in filename:
@@ -40,31 +49,151 @@ def get_source_from_name(filename):
 
 
 def load_data(filename):
-    # Check file type and load data
-    filetype = filename.split(-1)
+    """Load Data
+        Loads data into Pandas DataFrame
+
+        param filename: full filepath + filename or s3 bucket object name.
+        type filename: string
+        returns: DataFrame
+    """
+    filetype = filename.split('.')[-1]
     print('Detected {} file.'.format(filetype))
-    data = None
+
+    if filetype == 'json':
+        data = pd.read_json(filename, lines=True)
     return data
 
 
-def write_data(data, savename, max_size, prefix):
-    print('Data received')
+def generate_job(savepath, job_type):
+    bucket = get_bucket()
+    job_data = {
+        'Key': savepath
+    }
+    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
+    with open(job_name, 'w') as file:
+        json.dump(job_data, file)
+    bucket.save(job_name, 'Jobs/{}'.format(job_name))
+    os.remove(job_name)
 
 
-def save_chunks(data, max_size, prefix):
-    pass
+def write_data(data, savepath, dry_run=True):
+    print('Saving {}'.format(savepath))
+    if dry_run:
+        print('Executing Dry Run to {}'.format(savepath))
+        file_stream = BytesIO()
+        data.to_parquet(file_stream)
+        print(pd.read_parquet(file_stream).head())
+    else:
+        print('Commencing upload of {} to S3'.format(savepath))
+        tempfilename = savepath.split('/')[-1]
+        data.to_parquet(tempfilename)
+        bucket = get_bucket()
+        bucket.save(tempfilename, savepath)
+        os.remove(tempfilename)
 
+
+def save_chunks(data, max_size, prefix, rootname, path):
+    """Save Chunks
+        Bin dataframe and save into parquet files at defined
+        max_size intervals.
+
+        param data: data to bin and save
+        type data: dataframe
+        param max_size: maximum number of rows in each bin
+        type max_size: int
+        param prefix: prefix for saved files
+        type prefix: string
+        param rootname: root file name (e.g. photos, reviews, tips)
+        type rootname: string
+        param path: absolute path excluding filename or s3 object path excluding filename
+        type path: string
+    """
+    # Bin dataframes
+    binned_frames = bin_dataframe(data=data, max_size=max_size)
+    # Write bins
+    savepaths = []
+    for count, frame in enumerate(binned_frames):
+        savepath = path + prefix + '_' + rootname + '_' + str(count)
+        savepaths.append(savepath)
+        write_data(data=frame, savepath=savepath, dry_run=False)
+    return savepaths
+
+
+def bin_dataframe(data, max_size):
+    len_data = len(data)
+    if len_data >= max_size:
+        num_chunks = ceil(len_data/max_size)
+    else:
+        num_chunks = 1
+    print('Preparing {} chunks of size {} for data of len {}'.\
+        format(num_chunks, max_size, len_data))
+    binned_frames = []
+    for i in range(num_chunks):
+        start = i*max_size
+        stop = (i+1)*max_size-1
+        if stop >= len_data:
+            binned_frames.append(
+                data.loc[start:, :]
+            )
+        else:
+            binned_frames.append(
+                data.loc[start:stop, :]
+            )
+        # print('start {} stop {}'.format(start, stop))
+        # print('Bin created: length', len(binned_frames[i]))
+        # print(binned_frames[i].head(1))
+        # print(binned_frames[i].tail(1))
+    return binned_frames
 
 ##################################
 ###Transform Validate Functions###
 ##################################
 
+def tvf_business(filename):
+    pass
+
+
+def tvf_user(filename):
+    pass
+
+
+def tvf_checkin(filename):
+    pass
+
+
+def tvf_photo(filename):
+    print('Beginning photo data transformation.')
+    data = load_data(filename)
+    savepaths = save_chunks(
+        data=data,
+        max_size=100000,
+        prefix='clean',
+        rootname='photo',
+        path='Clean/',
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='POST')
+
+
+def tvf_tips(filename):
+    pass
+
+
 def tvf_review(filename):
     data = load_data(filename)
-    write_data(data, savename='review', max_size=10000, prefix='clean')
     return True
 
 
+table_transformers = {
+    'business': tvf_business,
+    'user': tvf_user,
+    'checkin': tvf_checkin,
+    'photo': tvf_photo,
+    'tip': tvf_tips,
+    'review': tvf_review,
+}
+
+
 if __name__ == "__main__":
-    filename = 'yelp/woody_arnold.porn.json'
-    load_data(filename)
+    filename = 'photo.json'
+    route_data(filename)
