@@ -41,6 +41,6 @@ def timeseries(bus_id):
     output = (df_final.groupby(['date'], as_index=True)
              .apply(lambda x: x[['word','count','pct_total','rank',\
                  'star_review']].to_dict('r'))
-              .to_json())
+              .to_json()).replace("'", "")
 
     return output
