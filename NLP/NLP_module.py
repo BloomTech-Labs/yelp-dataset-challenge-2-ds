@@ -2,7 +2,6 @@ from awstools.awstools import s3
 import pandas as pd
 import json
 
-# test comment
 class job_list():
     def __init__(self, job_list=None):
         self.job_list = job_list
@@ -36,7 +35,7 @@ def get_nlp_jobs(bucket):
         return new_jobs.job_list
 
 def read_next_job(): #Done
-    jobs = get_nlp_jobs()
+    jobs = get_nlp_jobs(bucket)
     path = jobs[0].get('Key')
     download_data(path, 'jobs_task.json')
 
@@ -51,6 +50,9 @@ def download_data(path, save_name=None):
     s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
 
 # Done, Only works with json data files
+##
+##
+## handle parquet files df.read_parquet(bucket.get...)
 def get_text_df(data_file):
     data = []
     for line in open(data_file, 'r'):
@@ -67,14 +69,18 @@ def process(df):
 
 def put_in_processed(df):
     # Need to create file with processed data
-    ###
-    ###
-    processed_file_path = 'Processed/' + filename
-    s3.upload_file(file_path=, 'yelp-data-shared-labs18', object_name=processed_file_path) #s3 function, change path to processed
+    
 
+    # save as parquet file
+    ###
+
+    ###
+    # processed_file_path = 'Processed/' + filename
+    # s3.upload_file(file_path=, 'yelp-data-shared-labs18', object_name=processed_file_path) #s3 function, change path to processed
+    pass
 # Done
 def delete_last_job(bucket):
-    jobs = get_nlp_jobs()
+    jobs = get_nlp_jobs(bucket)
     path = jobs[0].get('Key')
     bucket.delete_object(path)
     if len(jobs) == 1:
