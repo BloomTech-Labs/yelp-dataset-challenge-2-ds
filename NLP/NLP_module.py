@@ -1,6 +1,14 @@
+# !pip install pyarrow
 from awstools.awstools import s3
 import pandas as pd
 import json
+
+# Need to already have access to s3 bucket
+# Run the line below with the keys to get access 
+# s3.setup_aws(key_id=[ACCESS_KEY_ID], secret_key=[SECRET_ACCESS_KEY])
+
+# Only reads .parquet files
+
 
 class job_list():
     def __init__(self, job_list=None):
@@ -12,10 +20,9 @@ bucket = s3.Bucket('yelp-data-shared-labs18')
 # Main while loop
 while is_nlp_jobs_empty(bucket) == False:
     path = read_next_job(bucket)
-    download_data(path, 'data_file.json')
-    df = get_text_df('data_file.json')
-    processed_data = process(df)
-    put_in_processed(processed_data)
+    df = get_df(path)
+    processed_df = process(df)
+    put_in_processed(processed_df, path)
     delete_last_job(bucket)
 
 # Functions
@@ -28,7 +35,7 @@ def get_nlp_jobs(bucket):
         nlp_jobs = []
         jobs = bucket.get_dir_contents('Jobs')
         for job in jobs:
-            if 'nlp' in job:
+            if 'NLP' or 'nlp' in job:
                 nlp_jobs.append(job)
         new_jobs.job_list = nlp_jobs
     else:
@@ -45,39 +52,45 @@ def read_next_job(): #Done
 
     return next_job
 
-# Done
+# Done, only needed for json files, parquet files are not downloaded locally
 def download_data(path, save_name=None):
     s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
 
-# Done, Only works with json data files
-##
-##
-## handle parquet files df.read_parquet(bucket.get...)
-def get_text_df(data_file):
-    data = []
-    for line in open(data_file, 'r'):
-        row = json.loads(line)
-        data.append(row)
-
-    df = pd.DataFrame(data)
-
-    return df
+# Done
+def get_df(data_file):
+    
+    # This code works to convert json files but we are not currently planning to do that
+    # Leaving it here in case we want to expand functionality later, but that would require changes elsewhere
+    # if data_file[-4:] == 'json':
+    #     data = []
+    #     for line in open(data_file, 'r'):
+    #         row = json.loads(line)
+    #         data.append(row)
+    #     df = pd.DataFrame(data)
+    #     return df
+    
+    if data_file[-7:] == 'parquet':
+        data = s3.download_file('yelp-data-shared-labs18', data_file)
+        df = pd.read_parquet(data)
+        return df
+    
+    raise TypeError('Invalid file type, must be a .parquet file')    
 
 def process(df):
     # Aki's NLP function
     pass
 
-def put_in_processed(df):
-    # Need to create file with processed data
-    
+# Done
+def put_in_processed(df, path):
+    # getting the original file name from the path
+    filename = path.split('/')[-1]
 
-    # save as parquet file
-    ###
+    # creating temporary local parquet file
+    df.to_parquet('temp_parquet_file.parquet')
 
-    ###
-    # processed_file_path = 'Processed/' + filename
-    # s3.upload_file(file_path=, 'yelp-data-shared-labs18', object_name=processed_file_path) #s3 function, change path to processed
-    pass
+    processed_file_path = 'Processed/' + filename
+    s3.upload_file(file_path='temp_parquet_file.parquet', bucket='yelp-data-shared-labs18', object_name=processed_file_path)
+
 # Done
 def delete_last_job(bucket):
     jobs = get_nlp_jobs(bucket)
