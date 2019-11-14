@@ -60,7 +60,7 @@ bucket.save(test_path, 'upload_test.txt')
 
 3. Clone this repository.
 
-> git clone https://github.com/yelp-dataset-challenge-2-labs18/data-engineering.git
+> git clone https://github.com/Lambda-School-Labs/yelp-dataset-challenge-2-ds.git
 
 3. Setup environment
 
