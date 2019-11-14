@@ -64,4 +64,5 @@ def tvf_review(filename):
 
 
 if __name__ == "__main__":
+    filename = None
     load_data(filename)
