@@ -3,36 +3,47 @@ import pandas as pd
 import json
 
 # test comment
+class job_list():
+    def __init__(self, job_list=None):
+        self.job_list = job_list
+
+new_jobs = job_list()
+bucket = s3.Bucket('yelp-data-shared-labs18')
 
 # Main while loop
-while is_jobs_empty() == False:
-    path = read_next_job()
+while is_nlp_jobs_empty(bucket) == False:
+    path = read_next_job(bucket)
     download_data(path, 'data_file.json')
     df = get_text_df('data_file.json')
     processed_data = process(df)
     put_in_processed(processed_data)
-    delete_last_job()
+    delete_last_job(bucket)
 
 # Functions
-def is_jobs_empty(): #Done
-    bucket = s3.Bucket('yelp-data-shared-labs18')
-    jobs = []
-    jobs = bucket.get_dir_contents('Jobs')
-    if jobs == []:
-        return True
-    else: return False
+def is_nlp_jobs_empty(bucket): #Done
+    return len(get_nlp_jobs(bucket)) == 0
+
+def get_nlp_jobs(bucket):
+    if new_jobs.job_list == None:
+        jobs = []
+        nlp_jobs = []
+        jobs = bucket.get_dir_contents('Jobs')
+        for job in jobs:
+            if 'nlp' in job:
+                nlp_jobs.append(job)
+        new_jobs.job_list = nlp_jobs
+    else:
+        return new_jobs.job_list
 
 def read_next_job(): #Done
-    bucket = s3.Bucket('yelp-data-shared-labs18')
-    jobs = []
-    jobs = bucket.get_dir_contents('Jobs')
+    jobs = get_nlp_jobs()
     path = jobs[0].get('Key')
     download_data(path, 'jobs_task.json')
 
     with open('jobs_task.json') as job_file:
         job = json.load(job_file)
         next_job = job.get('file')
-    
+
     return next_job
 
 # Done
@@ -45,7 +56,7 @@ def get_text_df(data_file):
     for line in open(data_file, 'r'):
         row = json.loads(line)
         data.append(row)
-    
+
     df = pd.DataFrame(data)
 
     return df
@@ -58,12 +69,15 @@ def put_in_processed(df):
     # Need to create file with processed data
     ###
     ###
-    s3.upload_file(processed_file_path, 'Processed', object_name=None) #s3 function, change path to processed
+    processed_file_path = 'Processed/' + filename
+    s3.upload_file(file_path=, 'yelp-data-shared-labs18', object_name=processed_file_path) #s3 function, change path to processed
 
 # Done
-def delete_last_job():
-    bucket = s3.Bucket('yelp-data-shared-labs18')
-    jobs = []
-    jobs = bucket.get_dir_contents('Jobs')
+def delete_last_job(bucket):
+    jobs = get_nlp_jobs()
     path = jobs[0].get('Key')
     bucket.delete_object(path)
+    if len(jobs) == 1:
+        new_jobs.job_list = None
+    else:
+        new_jobs.job_list = jobs[1:]
