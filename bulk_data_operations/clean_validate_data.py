@@ -77,7 +77,7 @@ def generate_job(savepath, job_type):
     job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
     temp_job_path = '/tmp/'+job_name
     with open(temp_job_path, 'w') as file:
-        json.dump(temp_job_path, file)
+        json.dump(job_data, file)
     bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
     os.remove(temp_job_path)
 
@@ -273,11 +273,11 @@ if __name__ == "__main__":
     users = 'user.json'
     businesses = 'business.json'
 
+    # route_data(photos)
     # route_data(checkins)
     # route_data(tips)
     route_data(users)
-    # route_data(reviews)
+    route_data(reviews)
     # route_data(businesses)
 
     ## Completed 11/13/2019
-    #route_data(photos)
