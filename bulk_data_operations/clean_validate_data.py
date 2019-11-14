@@ -41,6 +41,8 @@ def get_source_from_name(filename):
 
 def load_data(filename):
     # Check file type and load data
+    filetype = filename.split(-1)
+    print('Detected {} file.'.format(filetype))
     data = None
     return data
 
@@ -64,5 +66,5 @@ def tvf_review(filename):
 
 
 if __name__ == "__main__":
-    filename = None
+    filename = 'yelp/woody_arnold.porn.json'
     load_data(filename)
