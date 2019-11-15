@@ -194,15 +194,13 @@ def load_aws_environment_file(credential_file=None, profile='default'):
     os.environ['AWS_SHARED_CREDENTIALS_FILE'] = credential_file
     os.environ['AWS_PROFILE'] = profile
 
-
 def set_aws_environ(key_id=None, secret_key=None):
     if key_id is None or secret_key is None:
         key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
         secret_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
     os.environ["aws_access_key_id"] = key_id
     os.environ["aws_secret_access_key"] = secret_key
-
-
+    
 def create_file(filename, line):
     """
     part of setup_aws. Creates files at filename.  Only takes single line file streams.
@@ -255,7 +253,6 @@ def get_regions(region_file='aws_regions.txt'):
         "eu-north-1",
         "me-south-1",
     ]
-
 
 def check_region(region):
     """
@@ -339,7 +336,6 @@ def upload_file(file_path, bucket, object_name=None):
             return False
         return True
 
-
 def download_file(bucket_name, object_name, save_name=None, **kwargs):
     # Download file to memory if save_name == None
     #   This may not work for non string-representative data.
@@ -361,11 +357,6 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
                 bucket_name, object_name, save_name
                 )
 
-# Not currently working, maybe helpful for reading jobs
-# def download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None)
-#         s3.download_fileobj(Bucket, Key, data)
-
-
 def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
     """
     Return generator that yields keys in S3 bucket.
@@ -379,7 +370,6 @@ def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
         if key.startswith(prefix) and key.endswith(suffix):
             yield key
     return response
-
 
 ## Adaped from https://alexwlchan.net/2019/07/listing-s3-keys/
 ## Special thanks to Alex Chan
@@ -418,7 +408,6 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
                 key = obj["Key"]
                 if key.endswith(suffix):
                     yield obj
-
 
 def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None):
     """
