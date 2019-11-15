@@ -3,7 +3,14 @@ from awstools.awstools import s3
 import pandas as pd
 import spacy
 from spacy.tokens import Doc
-import nltk
+import time
+
+
+import logging
+
+###Logging###
+logger = logging.getLogger(__name__+" NLP Processing")
+
 
 # using the spacy library to vectorize existing tokens
 # these download models
@@ -39,6 +46,7 @@ def filter_doc(doc):
 # upgraded versions (TODO errors with finding spacy model in parallel process IPython)
 @filter_data
 def tokenize(x):
+
     return nlp(x)
 
 # Counting ngram function
@@ -85,8 +93,7 @@ def create_noun_chunks(x):
     span_list.append(span.text)
   return span_list
 
-def create_lemmas(text):
-    doc = nlp(text)
+def create_lemmas(doc):
     lemmas = []
     for token in doc:
         if (token.is_stop != True) and (token.is_punct != True):
@@ -95,11 +102,36 @@ def create_lemmas(text):
 
 # The Masta
 def run_all(df):
-  df['token'] = df['text'].apply(tokenize)
-  df['token_vector'] = df['token'].apply(create_nlp_vectors)
-  df['token'] = df['token'].apply(token_to_text)
-  df['ngram'] = df['token'].apply(create_noun_chunks)
-  df['lemma'] = df['text'].apply(create_lemmas)
+    start_main = time.time()
+    # Main loop
+    start_token = time.time()
+    df['token'] = df['text'].apply(tokenize)
+    stop_token = time.time()
+    logger.info('Tokenized in {}'.format(stop_token - start_token))
+
+    start_vector = time.time()
+    df['token_vector'] = df['token'].apply(create_nlp_vectors)
+    stop_vector = time.time()
+    logger.info('Vectorized in {}'.format(stop_vector - start_vector))
+
+    start_lemma = time.time()
+    df['lemma'] = df['token'].apply(create_lemmas)
+    stop_lemma = time.time()
+    logger.info('Lemmatized in {}'.format(stop_lemma - start_lemma))
+
+    start_tokentext = time.time()
+    df['token'] = df['token'].apply(token_to_text)
+    start_tokentext = time.time()
+l   logger.info('Coverted to text in {}'.format(stop_tokentext - start_tokentext))
+
+    start_ngram = time.time()
+    df['ngram'] = df['token'].apply(create_noun_chunks)
+    start_ngram = time.time()
+    logger.info('Noun Chunks in {}'.format(stop_ngram - start_ngram))
+
+    # Time logging
+    stop_main = time.time()
+    logger.info('Batch of {} processed in {}'.format(len(df), stop_main-start_main))
   return df
 
 """The master function above will run everything"""
