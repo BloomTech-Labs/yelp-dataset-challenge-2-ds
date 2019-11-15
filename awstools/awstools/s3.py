@@ -32,8 +32,12 @@ class Bucket():
         return 'AWS S3 Bucket <{}>'.format(self.bucket_name)
 
     def setup_env(self, config_type):
-        credential_file = os.path.join(os.getcwd(), '.aws') + '/credentials'
-        load_aws_environment(credential_file=credential_file)
+        try:
+            credential_file = os.path.join(os.getcwd(), '.aws', 'credentials')
+            load_aws_environment_file(credential_file=credential_file)
+        except:
+            print('Could not find credential file. Defaulting to manual setup.')
+            set_aws_environ()
 
     def get(self, object_name, save_name=None, **kwargs):
         return download_file(
@@ -61,7 +65,7 @@ class Bucket():
             contents = []
             for key in objects:
                 contents.append(key)
-            
+
         # If the search returned something, slice off the first result because that will be the directory itself
         if contents != []:
             return contents[1:]
@@ -92,7 +96,7 @@ class Bucket():
             search=search,
             prefix=prefix,
             suffix=suffix)
-            
+
 class ProgressPercentage(object):
     def __init__(self, filename):
         self._filename = filename
@@ -119,7 +123,17 @@ def get_client(setup=False):
         setup_aws()
     # Setup connection with credentials and yield created client.
     #   Allows for usage: with get_client() as client: client...
-    client = boto3.client('s3')
+    try:
+        client = boto3.client('s3')
+    except:
+        print('Client could not read credential file.  Looking for os environment variables')
+        client = boto3.client(
+            's3',
+            aws_access_key_id=os.environ["aws_access_key_id"],
+            aws_secret_access_key=os.environ["aws_secret_access_key"]
+            )
+        print('Could not establish client')
+        raise
     yield client
 
 
@@ -154,10 +168,10 @@ def setup_aws(key_id=None, secret_key=None, region=None):
     create_file(cred_path, "\n".join([profile, key_id, secret_key]))
     create_file(config_path, "\n".join([profile, region]))
     # Load env files
-    load_aws_environment(credential_file=cred_path, profile='default')
+    load_aws_environment_file(credential_file=cred_path, profile='default')
 
 
-def load_aws_environment(credential_file=None, profile='default'):
+def load_aws_environment_file(credential_file=None, profile='default'):
     """Set local environment variables.  Can be run alone if
     credential_file already created.
 
@@ -179,6 +193,14 @@ def load_aws_environment(credential_file=None, profile='default'):
             raise
     os.environ['AWS_SHARED_CREDENTIALS_FILE'] = credential_file
     os.environ['AWS_PROFILE'] = profile
+
+
+def set_aws_environ(key_id=None, secret_key=None):
+    if key_id is None or secret_key is None:
+        key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
+        secret_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
+    os.environ["aws_access_key_id"] = key_id
+    os.environ["aws_secret_access_key"] = secret_key
 
 
 def create_file(filename, line):
@@ -284,7 +306,7 @@ def list_buckets(setup=False):
     """
     if setup:
         credential_file = os.path.join(os.getcwd(), '.aws') + '/credentials'
-        load_aws_environment(credential_file=credential_file)
+        load_aws_environment_file(credential_file=credential_file)
 
     with get_client() as connection:
         response = connection.list_buckets()
