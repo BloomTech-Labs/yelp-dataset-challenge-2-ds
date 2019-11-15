@@ -9,7 +9,7 @@ import spacy
 print('loaded en_core_web_lg')
 
 # Need to already have access to s3 bucket
-# Run the line below with the keys to get access 
+# Run the line below with the keys to get access
 # s3.setup_aws(key_id=[ACCESS_KEY_ID], secret_key=[SECRET_ACCESS_KEY])
 
 # Only reads .parquet files
@@ -30,12 +30,10 @@ def get_nlp_jobs(bucket):
     if new_jobs.job_list == None:
         jobs = []
         nlp_jobs = []
-        ##  
-        ##  TODO - Change from test_jobs back to jobs
-        ##
-        jobs = bucket.get_dir_contents('Test_jobs')
+        jobs = bucket.get_dir_contents('Jobs')
         for job in jobs:
             if 'nlp' in job.get('Key').lower(): # case insensitive
+                print('Job_Name {} Job_type {}'.format(job, type(job)))
                 nlp_jobs.append(job)
         new_jobs.job_list = nlp_jobs
         return new_jobs.job_list
@@ -49,7 +47,7 @@ def read_next_job(bucket):
 
     with open('jobs_task.json') as job_file:
         job = json.load(job_file)
-        next_job = job.get('file')
+        next_job = job.get('Key')
 
     print('working on file: ' + next_job)
     return next_job
@@ -59,7 +57,7 @@ def download_data(path, save_name=None):
     s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
 
 def get_df(data_file):
-    
+
     # This code works to convert json files but we are not currently planning to do that
     # Leaving it here in case we want to expand functionality later, but that would require changes elsewhere
     # if data_file[-4:] == 'json':
@@ -69,13 +67,10 @@ def get_df(data_file):
     #         data.append(row)
     #     df = pd.DataFrame(data)
     #     return df
-    
-    if data_file[-7:] == 'parquet':
-        data = s3.download_file('yelp-data-shared-labs18', data_file)
-        df = pd.read_parquet(data)
-        return df
-    
-    raise TypeError('Invalid file type, must be a .parquet file')    
+
+    data = s3.download_file('yelp-data-shared-labs18', data_file)
+    df = pd.read_parquet(data)
+    return df
 
 def process(df):
     processed_df = NLP_processing.run_all(df)
@@ -108,6 +103,7 @@ while is_nlp_jobs_empty(bucket) == False:
     processed_df = process(df)
     put_in_processed(processed_df, path)
     delete_last_job(bucket)
+    break
 
 # Bonus, used for testing
 def create_job(job_file, job_name):
@@ -117,4 +113,3 @@ def create_job(job_file, job_name):
         json.dump(data, outfile)
     object_name = 'Test_jobs/'+job_name
     s3.upload_file(file_path=job_name, bucket='yelp-data-shared-labs18', object_name=object_name)
-    

@@ -3,7 +3,6 @@ from awstools.awstools import s3
 import pandas as pd
 import spacy
 from spacy.tokens import Doc
-import nltk
 
 # using the spacy library to vectorize existing tokens
 # these download models
