@@ -3,15 +3,18 @@
 """
 import requests
 import numpy as np
-import hashlib
-import json
 import pandas as pd
 import time
 from multiprocessing import Pool
 from functools import partial
 import logging
 import os
-request_logger = logging.getLogger(__name__+" request:")
+from jobs import get_jobs, pop_current_job, read_job,\
+     download_data, delete_local_file, delete_s3_file
+
+
+###Logging###
+request_logger = logging.getLogger(__name__+" requests")
 log_path = os.path.join(os.getcwd(), 'logs/debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
@@ -97,3 +100,52 @@ def run_request(bunch, url):
     except:
         request_logger.error("POST failed.  Trying again")
         run_request(bunch=bunch, url=url)
+
+
+def get_source_from_name(filename):
+    for table_name in tables.keys():
+        if table_name in filename:
+            return tables[table_name]
+    raise NameError('Tablename not found.  Aborting.')
+
+
+tables = {
+    'business': 'businesses',
+    'user': 'users',
+    'checkin': 'checkins',
+    'photo': 'photos',
+    'tip': 'tips',
+    'review': 'reviews',
+}
+
+
+if __name__ == "__main__":
+    write_logger = logging.getLogger(__name__+' DB-writer')
+
+    num_jobs = len(get_jobs('post'))
+    for i in range(num_jobs):
+        # Get a job and read out the datapath
+        current_job = pop_current_job()
+        asset = read_job(current_job)['Key']
+        write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
+
+        # Load the data
+        datapath = download_data(asset)
+        data = pd.read_parquet(datapath)
+
+        # Build query package
+        package = df_to_query(df=data, tablename=get_source_from_name(asset))
+
+        # Split package
+        databunch = build_databunch(query=package, max_size=200)
+
+        # Connect and write to database via api
+        parallel_post_requests(
+            databunch=databunch,
+            url='https://db-api-yelp18-staging.herokuapp.com/api/data',
+            max_requests=15
+            )
+
+        # Cleanup
+        delete_local_file(datapath)
+        # delete_s3_file(current_job)

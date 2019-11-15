@@ -4,6 +4,8 @@ Jobs Library
 """
 from awstools import s3
 import json
+import os
+
 
 class g():
     def __init__(self, bucket=None, job_list=None):
@@ -24,11 +26,12 @@ def get_bucket():
         return g.bucket
     return g.bucket
 
-def download_data(object_path, save_path=''):
+def download_data(object_path, save_path='/tmp/'):
     bucket = get_bucket()
-    save_path = save_path + object_path
+    save_path = save_path + object_path.split('/')[-1]
     bucket.get(object_path, save_path)
     return save_path
+
 
 
 ###########################
@@ -56,15 +59,24 @@ def pop_current_job():
 
 
 def read_job(job):
-    return json.loads(download_data(job))
+    temp = download_data(job)
+    print(temp)
+    with open(temp) as jobfile:
+        response = json.load(jobfile)
+    delete_local_file(temp)
+    return response
 
 
-def delete_job_file(job_filepath):
+def delete_s3_file(filepath):
     bucket = get_bucket()
-    return bucket.delete_object(job_filepath)
+    return bucket.delete_object(filepath)
+
+
+def delete_local_file(filepath):
+    os.remove(filepath)
 
 
 if __name__ == "__main__":
     for i in range(2):
         current_job = pop_current_job()
-        download_data(current_job)
+        asset = read_job(current_job)['Key']
