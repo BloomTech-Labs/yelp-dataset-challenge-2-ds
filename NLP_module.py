@@ -5,6 +5,15 @@ import pandas as pd
 import json
 import spacy
 
+
+import logging
+
+###Logging###
+main_logger = logging.getLogger(__name__+" NLP Controller")
+log_path = os.path.join(os.getcwd(), 'debug.log')
+logging.basicConfig(filename=log_path, level=logging.INFO)
+
+
 # Need to download en_core_web_lg-2.2.0
 print('loaded en_core_web_lg')
 
@@ -33,7 +42,6 @@ def get_nlp_jobs(bucket):
         jobs = bucket.get_dir_contents('Jobs')
         for job in jobs:
             if 'nlp' in job.get('Key').lower(): # case insensitive
-                print('Job_Name {} Job_type {}'.format(job, type(job)))
                 nlp_jobs.append(job)
         new_jobs.job_list = nlp_jobs
         return new_jobs.job_list
@@ -43,6 +51,7 @@ def get_nlp_jobs(bucket):
 def read_next_job(bucket):
     jobs = get_nlp_jobs(bucket)
     path = jobs[0].get('Key')
+    main_logger.info("Starting job {}".format(path.split('/')[-1]))
     download_data(path, 'jobs_task.json')
 
     with open('jobs_task.json') as job_file:
@@ -103,7 +112,6 @@ while is_nlp_jobs_empty(bucket) == False:
     processed_df = process(df)
     put_in_processed(processed_df, path)
     delete_last_job(bucket)
-    break
 
 # Bonus, used for testing
 def create_job(job_file, job_name):
