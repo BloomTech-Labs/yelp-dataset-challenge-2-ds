@@ -4,6 +4,7 @@ import NLP_processing
 import pandas as pd
 import json
 import spacy
+import os
 
 
 import logging
@@ -88,13 +89,10 @@ def process(df):
 def put_in_processed(df, path):
     # getting the original file name from the path
     filename = path.split('/')[-1]
-
     # creating temporary local parquet file
     df.to_parquet('temp_parquet_file.parquet')
-
     processed_file_path = 'Processed/' + filename
     s3.upload_file(file_path='temp_parquet_file.parquet', bucket='yelp-data-shared-labs18', object_name=processed_file_path)
-    print()
 
 def delete_last_job(bucket):
     jobs = get_nlp_jobs(bucket)
@@ -105,19 +103,25 @@ def delete_last_job(bucket):
     else:
         new_jobs.job_list = jobs[1:]
 
+def generate_job(savepath, job_type):
+    job_data = {
+        'Key': savepath
+    }
+    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
+    temp_job_path = '/tmp/'+job_name
+    with open(temp_job_path, 'w') as file:
+        json.dump(job_data, file)
+    bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
+    os.remove(temp_job_path)
+
 # Main while loop
 while is_nlp_jobs_empty(bucket) == False:
     path = read_next_job(bucket)
     df = get_df(path)
     processed_df = process(df)
     put_in_processed(processed_df, path)
+    generate_job(savepath=path, job_type="POST")
     delete_last_job(bucket)
+    break
 
-# Bonus, used for testing
-def create_job(job_file, job_name):
-    data = {}
-    data['file'] = job_file
-    with open(job_name, 'w') as outfile:
-        json.dump(data, outfile)
-    object_name = 'Test_jobs/'+job_name
-    s3.upload_file(file_path=job_name, bucket='yelp-data-shared-labs18', object_name=object_name)
+
