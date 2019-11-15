@@ -234,7 +234,6 @@ def get_regions(region_file='aws_regions.txt'):
         "me-south-1",
     ]
 
-
 def check_region(region):
     """
     Check available regions for input validation.  Returns self if valid, else recursively asks for new region.
