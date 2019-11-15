@@ -180,7 +180,6 @@ def load_aws_environment(credential_file=None, profile='default'):
     os.environ['AWS_SHARED_CREDENTIALS_FILE'] = credential_file
     os.environ['AWS_PROFILE'] = profile
 
-
 def create_file(filename, line):
     """
     part of setup_aws. Creates files at filename.  Only takes single line file streams.
