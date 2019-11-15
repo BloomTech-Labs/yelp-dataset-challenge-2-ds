@@ -317,6 +317,9 @@ def upload_file(file_path, bucket, object_name=None):
             return False
         return True
 
+        # def download_data(path, save_name=None):
+    # s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
+
 
 def download_file(bucket_name, object_name, save_name=None, **kwargs):
     # Download file to memory if save_name == None
@@ -339,11 +342,6 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
                 bucket_name, object_name, save_name
                 )
 
-# Not currently working, maybe helpful for reading jobs
-# def download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None)
-#         s3.download_fileobj(Bucket, Key, data)
-
-
 def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
     """
     Return generator that yields keys in S3 bucket.
@@ -357,7 +355,6 @@ def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
         if key.startswith(prefix) and key.endswith(suffix):
             yield key
     return response
-
 
 ## Adaped from https://alexwlchan.net/2019/07/listing-s3-keys/
 ## Special thanks to Alex Chan
@@ -396,7 +393,6 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
                 key = obj["Key"]
                 if key.endswith(suffix):
                     yield obj
-
 
 def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None):
     """

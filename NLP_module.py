@@ -1,5 +1,6 @@
 # !pip install pyarrow
 from awstools.awstools import s3
+import NLP_processing
 import pandas as pd
 import json
 import spacy
@@ -14,7 +15,6 @@ print('loaded spacy corpus')
 
 # Only reads .parquet files
 
-
 class job_list():
     def __init__(self, job_list=None):
         self.job_list = job_list
@@ -24,7 +24,7 @@ bucket = s3.Bucket('yelp-data-shared-labs18')
 print('connected to bucket')
 
 # Functions
-def is_nlp_jobs_empty(bucket): #Done
+def is_nlp_jobs_empty(bucket):
     return len(get_nlp_jobs(bucket)) == 0
 
 def get_nlp_jobs(bucket):
@@ -43,7 +43,7 @@ def get_nlp_jobs(bucket):
     else:
         return new_jobs.job_list
 
-def read_next_job(bucket): #Done
+def read_next_job(bucket):
     jobs = get_nlp_jobs(bucket)
     path = jobs[0].get('Key')
     download_data(path, 'jobs_task.json')
@@ -55,11 +55,10 @@ def read_next_job(bucket): #Done
     print('working on file: ' + next_job)
     return next_job
 
-# Done, only needed for json files, parquet files are not downloaded locally
+# Only works for json files
 def download_data(path, save_name=None):
     s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
 
-# Done
 def get_df(data_file):
     
     # This code works to convert json files but we are not currently planning to do that
@@ -80,44 +79,9 @@ def get_df(data_file):
     raise TypeError('Invalid file type, must be a .parquet file')    
 
 def process(df):
-    # df['lemmas'], df['noun_chunks'], df['vectors'] = df['text'].apply(process_text)
-    pass
+    processed_df = NLP_processing.run_all(df)
+    return processed_df
 
-# def process_text(text):
-#     doc = nlp(text)
-
-#     # Getting lemmas
-#     lemmas = []
-#     for token in doc:
-#         if (token.is_stop != True) and (token.is_punct != True):
-#             lemmas.append(token.lemma_)
-    
-#     # Getting noun_chunks
-#     noun_chunks = list(doc.noun_chunks)
-
-#     # Getting vectors
-#     vector = doc.vector
-
-#     return lemmas, noun_chunks, vector
-
-# def process_df(df):
-#     doc = nlp(df.text)
-
-#     # Getting lemmas
-#     lemmas = []
-#     for token in doc:
-#         if (token.is_stop != True) and (token.is_punct != True):
-#             lemmas.append(token.lemma_)
-#     df['lemmas'] = lemmas
-
-#     # Getting noun_chunks
-#     noun_chunks = list(doc.noun_chunks)
-#     df['noun_chunks'] = noun_chunks
-#     # Getting vectors
-#     vector = doc.vector
-#     df['vectors'] = vector
-
-# Done
 def put_in_processed(df, path):
     # getting the original file name from the path
     filename = path.split('/')[-1]
@@ -128,7 +92,6 @@ def put_in_processed(df, path):
     processed_file_path = 'Processed/' + filename
     s3.upload_file(file_path='temp_parquet_file.parquet', bucket='yelp-data-shared-labs18', object_name=processed_file_path)
 
-# Done
 def delete_last_job(bucket):
     jobs = get_nlp_jobs(bucket)
     path = jobs[0].get('Key')
@@ -142,7 +105,17 @@ def delete_last_job(bucket):
 while is_nlp_jobs_empty(bucket) == False:
     path = read_next_job(bucket)
     df = get_df(path)
-    # processed_df = process(df) TODO uncomment
-    put_in_processed(df, path) # TODO change to processed_df instead of df
+    processed_df = process(df)
+    put_in_processed(processed_df, path)
     delete_last_job(bucket)
+
+# Bonus, used for testing
+def create_job(job_file, job_name):
+    data = {}
+    data['file'] = job_file
+    with open(job_name, 'w') as outfile:
+        json.dump(data, outfile)
+    object_name = 'Test_jobs/'+job_name
+    s3.upload_file(file_path=job_name, bucket='yelp-data-shared-labs18', object_name=object_name)
+    
 
