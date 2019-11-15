@@ -90,6 +90,7 @@ def put_in_processed(df, path):
 
     processed_file_path = 'Processed/' + filename
     s3.upload_file(file_path='temp_parquet_file.parquet', bucket='yelp-data-shared-labs18', object_name=processed_file_path)
+    print()
 
 def delete_last_job(bucket):
     jobs = get_nlp_jobs(bucket)
@@ -117,4 +118,3 @@ def create_job(job_file, job_name):
     object_name = 'Test_jobs/'+job_name
     s3.upload_file(file_path=job_name, bucket='yelp-data-shared-labs18', object_name=object_name)
     
-
