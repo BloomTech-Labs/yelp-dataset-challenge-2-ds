@@ -72,7 +72,7 @@ def load_data(filename):
 def generate_job(savepath, job_type):
     bucket = get_bucket()
     job_data = {
-        'Key': savepath
+        'File': savepath
     }
     job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
     temp_job_path = '/tmp/'+job_name
@@ -92,7 +92,7 @@ def write_data(data, savepath, dry_run=True):
     else:
         print('Commencing upload of {} to S3'.format(savepath))
         tempfilename = '/tmp/'+savepath.split('/')[-1]
-        data.to_parquet(tempfilename)
+        data.to_parquet(tempfilename + '.parquet')
         bucket = get_bucket()
         bucket.save(tempfilename, savepath)
         os.remove(tempfilename)
