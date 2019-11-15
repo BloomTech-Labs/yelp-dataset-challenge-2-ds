@@ -60,10 +60,10 @@ bucket.save(test_path, 'upload_test.txt')
 
 3. Clone this repository.
 
-> git clone https://github.com/yelp-dataset-challenge-2-labs18/data-engineering.git
+> git clone https://github.com/Lambda-School-Labs/yelp-dataset-challenge-2-ds.git
 
 3. Setup environment
 
-> conda create -y --name dse python==3.7
+> conda create -y --name dse python==3.7.5
 
 > conda install -f -y -q --name dse -c conda-forge --file requirements.txt
