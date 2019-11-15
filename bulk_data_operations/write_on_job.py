@@ -80,8 +80,8 @@ def parallel_post_requests(databunch, url, max_requests=10):
     runner = partial(run_request, url=url)
     p = Pool(max_requests)
     p.map(runner, databunch)
-    p.join()
     p.close()
+    p.join()
 
 
 def run_request(bunch, url):
