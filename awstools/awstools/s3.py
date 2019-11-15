@@ -315,10 +315,6 @@ def upload_file(file_path, bucket, object_name=None):
             return False
         return True
 
-        # def download_data(path, save_name=None):
-    # s3.download_file('yelp-data-shared-labs18', path, save_name=save_name)
-
-
 def download_file(bucket_name, object_name, save_name=None, **kwargs):
     # Download file to memory if save_name == None
     #   This may not work for non string-representative data.

@@ -86,12 +86,21 @@ def create_noun_chunks(x):
     span_list.append(span.text)
   return span_list
 
+def create_lemmas(text):
+    doc = nlp(text)
+    lemmas = []
+    for token in doc:
+        if (token.is_stop != True) and (token.is_punct != True):
+            lemmas.append(token.lemma_)
+    return lemmas
+
 # The Masta
 def run_all(df):
   df['token'] = df['text'].apply(tokenize)
   df['token_vector'] = df['token'].apply(create_nlp_vectors)
   df['token'] = df['token'].apply(token_to_text)
   df['ngram'] = df['token'].apply(create_noun_chunks)
+  df['lemma'] = df['text'].apply(create_lemmas)
   return df
 
 """The master function above will run everything"""

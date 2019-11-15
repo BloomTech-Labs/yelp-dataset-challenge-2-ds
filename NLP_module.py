@@ -6,8 +6,7 @@ import json
 import spacy
 
 # Need to download en_core_web_lg-2.2.0
-nlp = spacy.load("en_core_web_lg-2.2.0")
-print('loaded spacy corpus')
+print('loaded en_core_web_lg')
 
 # Need to already have access to s3 bucket
 # Run the line below with the keys to get access 
