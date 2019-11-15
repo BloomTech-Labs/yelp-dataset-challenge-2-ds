@@ -122,7 +122,7 @@ def run_all(df):
     start_tokentext = time.time()
     df['token'] = df['token'].apply(token_to_text)
     start_tokentext = time.time()
-l   logger.info('Coverted to text in {}'.format(stop_tokentext - start_tokentext))
+    logger.info('Coverted to text in {}'.format(stop_tokentext - start_tokentext))
 
     start_ngram = time.time()
     df['ngram'] = df['token'].apply(create_noun_chunks)
@@ -132,6 +132,6 @@ l   logger.info('Coverted to text in {}'.format(stop_tokentext - start_tokentext
     # Time logging
     stop_main = time.time()
     logger.info('Batch of {} processed in {}'.format(len(df), stop_main-start_main))
-  return df
+    return df
 
 """The master function above will run everything"""
