@@ -129,6 +129,9 @@ if __name__ == "__main__":
         # Get a job and read out the datapath
         current_job = pop_current_job()
         asset = read_job(current_job)['Key']
+        # Hack fix for bad jobs on first run.  REMOVE THIS.
+        asset = asset.replace('Clean/', 'Processed/')
+        # REMOVE THE LINE ABOVE
         write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
         # Load the data

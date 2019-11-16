@@ -49,10 +49,10 @@ def process_df(df):
     start_main = time.time()
 
     df['tuple'] = df.text.apply(process_text)
-    df['tokens'] = df.tuple.apply(get_tokens)
-    df['lemmas'] = df.tuple.apply(get_lemmas)
-    df['noun_chunks'] = df.tuple.apply(get_noun_chunks)
-    df['vectors'] = df.tuple.apply(get_vectors)
+    df['token'] = df.tuple.apply(get_tokens)
+    df['lemma'] = df.tuple.apply(get_lemmas)
+    df['ngram'] = df.tuple.apply(get_noun_chunks)
+    df['vector'] = df.tuple.apply(get_vectors)
     df.drop(['tuple'], axis='columns', inplace=True)
 
     stop_main = time.time()
