@@ -93,7 +93,7 @@ def run_request(bunch, url):
     try:
         time.sleep(np.random.random_sample()*10)
         start = time.time()
-        response = requests.post(url=url, json=bunch)
+        response = requests.post(url=url, json=bunch, timeout=None)
         assert response.status_code == 200
         request_logger.info("POST succeded.  Status= {}".format(response.status_code))
         stop = time.time()
@@ -137,6 +137,15 @@ if __name__ == "__main__":
         # Load the data
         datapath = download_data(asset)
         data = pd.read_parquet(datapath)
+
+        # Hack fix for bad jobs on first run.  REMOVE THIS. UNFUCK THIS
+        data = data.rename(columns={
+            'tokens':'token',
+            'lemmas':'lemma',
+            'noun_chunks':'noun_chunk',
+            'vectors':'token_vector'
+        })
+        # REMOVE THE LINE ABOVE
 
         # Build query package
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
