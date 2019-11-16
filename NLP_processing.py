@@ -121,12 +121,12 @@ def run_all(df):
 
     start_tokentext = time.time()
     df['token'] = df['token'].apply(token_to_text)
-    start_tokentext = time.time()
+    stop_tokentext = time.time()
     logger.info('Coverted to text in {}'.format(stop_tokentext - start_tokentext))
 
     start_ngram = time.time()
     df['ngram'] = df['token'].apply(create_noun_chunks)
-    start_ngram = time.time()
+    stop_ngram = time.time()
     logger.info('Noun Chunks in {}'.format(stop_ngram - start_ngram))
 
     # Time logging
