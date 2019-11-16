@@ -94,11 +94,7 @@ def create_noun_chunks(x):
   return span_list
 
 def create_lemmas(doc):
-    lemmas = []
-    for token in doc:
-        if (token.is_stop != True) and (token.is_punct != True):
-            lemmas.append(token.lemma_)
-    return lemmas
+    return [token.lemma_ for token in x]
 
 # The Masta
 def run_all(df):
