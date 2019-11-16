@@ -83,7 +83,7 @@ def get_df(data_file):
     return df
 
 def process(df):
-    processed_df = NLP_processing.run_all(df)
+    processed_df = NLP_processing.process_df(df)
     return processed_df
 
 def put_in_processed(df, path):
