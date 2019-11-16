@@ -93,6 +93,7 @@ def put_in_processed(df, path):
     df.to_parquet('temp_parquet_file.parquet')
     processed_file_path = 'Processed/' + filename
     s3.upload_file(file_path='temp_parquet_file.parquet', bucket='yelp-data-shared-labs18', object_name=processed_file_path)
+    generate_job(savepath=processed_file_path, job_type="POST")
 
 def delete_last_job(bucket):
     jobs = get_nlp_jobs(bucket)
@@ -120,7 +121,6 @@ while is_nlp_jobs_empty(bucket) == False:
     df = get_df(path)
     processed_df = process(df)
     put_in_processed(processed_df, path)
-    generate_job(savepath=path, job_type="POST")
     delete_last_job(bucket)
     break
 
