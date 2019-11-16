@@ -83,6 +83,8 @@ class Tip(Base):
     token = Column(Text)
     token_vector = Column(Text)
     ngram = Column(Text)
+    noun_chunk = Column(Text)
+    lemma = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
     user_id = Column(String, ForeignKey('users.user_id'))
 
@@ -100,5 +102,7 @@ class Review(Base):
     token_vector = Column(Text)
     token = Column(Text)
     ngram = Column(Text)
+    noun_chunk = Column(Text)
+    lemma = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
     user_id = Column(String, ForeignKey('users.user_id'))
