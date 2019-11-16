@@ -18,8 +18,6 @@ def process_text(text):
     doc = nlp(text)
  
     # Getting lemmas and tokens
-    start_token = time.time()
-
     lemmas = []
     tokens = []
     for token in doc:
@@ -27,20 +25,11 @@ def process_text(text):
             tokens.append(token.text)
             lemmas.append(token.lemma_)
     
-    stop_token = time.time()
-    logger.info('Tokenized and lemmatized in {}'.format(stop_token - start_token))
-    
     # Getting noun_chunks
-    start_noun_chunks = time.time()
     noun_chunks = list(doc.noun_chunks)
-    stop_noun_chunks = time.time()
-    logger.info('Noun Chunks in {}'.format(stop_noun_chunks - start_noun_chunks))
-
+    
     # Getting vectors
-    start_vector = time.time()
     vectors = doc.vector
-    stop_vector = time.time()
-    logger.info('Vectorized in {}'.format(stop_vector - start_vector))
 
     return (tokens, lemmas, noun_chunks, vectors)
 
