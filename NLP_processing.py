@@ -16,7 +16,7 @@ nlp = spacy.load("en_core_web_lg")
 
 def process_text(text):
     doc = nlp(text)
- 
+
     # Getting lemmas and tokens
     lemmas = []
     tokens = []
@@ -24,10 +24,10 @@ def process_text(text):
         if (token.is_stop != True) and (token.is_punct != True):
             tokens.append(token.text)
             lemmas.append(token.lemma_)
-    
+
     # Getting noun_chunks
-    noun_chunks = list(doc.noun_chunks)
-    
+    noun_chunks = [span.text for span in doc.noun_chunks]
+
     # Getting vectors
     vectors = doc.vector
 
@@ -57,5 +57,5 @@ def process_df(df):
 
     stop_main = time.time()
     logger.info('Batch of {} processed in {}'.format(len(df), stop_main-start_main))
-    
+
     return df
