@@ -2,7 +2,7 @@
 Jobs Library
     Read in jobs, Fetch Job Assets, Delete Jobs
 """
-from awstools import s3
+import s3
 import json
 import os
 

@@ -50,6 +50,8 @@ class Bucket():
     def save(self, file_name, object_name=None):
         upload_file(file_name, self.bucket_name, object_name=object_name)
 
+    def delete(self, object_name):
+        delete_object(bucket_name=self.bucket_name, object_name=object_name)
 
     def dir(self, all=False):
         if all:
@@ -73,29 +75,13 @@ class Bucket():
         else:
             raise NameError("No directory starts with " + dir + " prefix.")
 
-    def delete_object(self, object_name):
-    #     """Delete an object from an S3 bucket
-
-    #     :param bucket_name: string
-    #     :param object_name: string
-    #     :return: True if the referenced object was deleted, otherwise False
-    #     """
-
-        # Delete the object
-        s3 = boto3.client('s3')
-        try:
-            s3.delete_object(Key=object_name, Bucket=self.bucket_name)
-        except ClientError as e:
-            logging.error(e)
-            return False
-        return True
-
     def find(self, search=None, prefix=None, suffix=None):
         return get_matching_s3_keys(
             bucket_contents=self.contents,
             search=search,
             prefix=prefix,
             suffix=suffix)
+
 
 class ProgressPercentage(object):
     def __init__(self, filename):
@@ -200,7 +186,7 @@ def set_aws_environ(key_id=None, secret_key=None):
         secret_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
     os.environ["aws_access_key_id"] = key_id
     os.environ["aws_secret_access_key"] = secret_key
-    
+
 def create_file(filename, line):
     """
     part of setup_aws. Creates files at filename.  Only takes single line file streams.
@@ -356,6 +342,24 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
             transfer.download_file(
                 bucket_name, object_name, save_name
                 )
+
+
+def delete_object(bucket_name, object_name):
+#     """Delete an object from an S3 bucket
+
+#     :param bucket_name: string
+#     :param object_name: string
+#     :return: True if the referenced object was deleted, otherwise False
+#     """
+    # Delete the object
+    with get_client() as connection:
+        try:
+            connection.delete_object(Key=object_name, Bucket=bucket_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        return True
+
 
 def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
     """
