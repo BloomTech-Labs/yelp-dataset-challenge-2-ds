@@ -151,15 +151,15 @@ if __name__ == "__main__":
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
 
         # Split package
-        databunch = build_databunch(query=package, max_size=200)
+        databunch = build_databunch(query=package, max_size=40)
 
         # Connect and write to database via api
         parallel_post_requests(
             databunch=databunch,
             url='https://db-api-yelp18-staging.herokuapp.com/api/data',
-            max_requests=15
+            max_requests=10
             )
 
         # Cleanup
         delete_local_file(datapath)
-        # delete_s3_file(current_job)
+        delete_s3_file(current_job)
