@@ -84,7 +84,7 @@ def parallel_post_requests(databunch, url, max_requests=10):
     p.join()
 
 
-def run_request(bunch, url):
+def run_request(bunch, url, retry_size=20):
     """Run and time a request with the python requests library
     """
     import requests
@@ -100,8 +100,14 @@ def run_request(bunch, url):
         request_logger.info('Batch of {} processed in {}'.format(len(bunch['data']), stop-start))
         return True
     except:
-        request_logger.error("POST failed.  Trying again")
-        run_request(bunch=bunch, url=url)
+        min_size = retry_size - 1
+        request_logger.error("POST failed.  Trying again with smaller bunch of {}.".format(min_size))
+        if min_size < 1:
+            request_logger.error("POST failed at single element.  Dropping Request.")
+            return False
+        databunch = build_databunch(query=bunch, max_size=min_size)
+        for mini_bunch in databunch:
+            run_request(bunch=mini_bunch, url=url, retry_size=min_size)
 
 
 def get_source_from_name(filename):
@@ -151,7 +157,7 @@ if __name__ == "__main__":
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
 
         # Split package
-        databunch = build_databunch(query=package, max_size=40)
+        databunch = build_databunch(query=package, max_size=100)
 
         # Connect and write to database via api
         parallel_post_requests(
@@ -163,3 +169,4 @@ if __name__ == "__main__":
         # Cleanup
         delete_local_file(datapath)
         delete_s3_file(current_job)
+        write_logger.info("Deleted Job: {}".format(current_job))

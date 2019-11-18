@@ -67,9 +67,9 @@ def read_job(job):
     return response
 
 
-def delete_s3_file(filepath):
+def delete_s3_file(objectpath):
     bucket = get_bucket()
-    return bucket.delete_object(filepath)
+    return bucket.delete(objectpath)
 
 
 def delete_local_file(filepath):
