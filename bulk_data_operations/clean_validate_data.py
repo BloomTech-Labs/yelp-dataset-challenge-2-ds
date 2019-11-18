@@ -82,7 +82,7 @@ def generate_job(savepath, job_type):
     os.remove(temp_job_path)
 
 
-def write_data(data, savepath, dry_run=True):
+def write_data(data, savepath, dry_run=True, filetype='parquet'):
     print('Saving {}'.format(savepath))
     if dry_run:
         print('Executing Dry Run to {}'.format(savepath))
@@ -92,7 +92,12 @@ def write_data(data, savepath, dry_run=True):
     else:
         print('Commencing upload of {} to S3'.format(savepath))
         tempfilename = '/tmp/'+savepath.split('/')[-1]
-        data.to_parquet(tempfilename)
+        if filetype == 'parquet':
+            data.to_parquet(tempfilename)
+        elif filetype == 'json':
+            data.to_json(tempfilename, orient='records')
+        else:
+            raise TypeError("Only parquet or json saving supported")
         bucket = get_bucket()
         bucket.save(tempfilename, savepath)
         os.remove(tempfilename)

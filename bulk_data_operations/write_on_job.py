@@ -142,6 +142,7 @@ if __name__ == "__main__":
 
         # Load the data
         datapath = download_data(asset)
+        # TODO: Type check and read in data
         data = pd.read_parquet(datapath)
 
         # Hack fix for bad jobs on first run.  REMOVE THIS. UNFUCK THIS
@@ -157,13 +158,13 @@ if __name__ == "__main__":
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
 
         # Split package
-        databunch = build_databunch(query=package, max_size=100)
+        databunch = build_databunch(query=package, max_size=150)
 
         # Connect and write to database via api
         parallel_post_requests(
             databunch=databunch,
             url='https://db-api-yelp18-staging.herokuapp.com/api/data',
-            max_requests=10
+            max_requests=12
             )
 
         # Cleanup
