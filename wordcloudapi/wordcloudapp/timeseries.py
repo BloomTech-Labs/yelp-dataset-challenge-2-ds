@@ -1,8 +1,10 @@
 import numpy as np
 import pandas as pd
+import requests
+import json
 import ast
 from collections import Counter
-from .models import DB, reviews
+
 
 def wc_count(docs):
     """Count the occurance of each word and rank
@@ -16,12 +18,9 @@ def wc_count(docs):
 
 
 def timeseries(bus_id):
+    # Query database API for data
+    df = get_reviews(bus_id)
 
-    result = reviews.query.with_entities(reviews.tokens, reviews.date, \
-             reviews.star_review).filter_by(business_id=bus_id)
-    df = pd.read_sql(sql = result.statement, con = DB.engine)
-    df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
-        str.split(', ')
     filtered = df.sort_values('date')
     filtered = filtered.reset_index()
     filtered['bins'] = pd.qcut(filtered.index, q=10, precision=0)
@@ -44,3 +43,32 @@ def timeseries(bus_id):
               .to_json()).replace("'", "")
 
     return output
+
+
+def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
+    """Create JSON request object and send GET request to database api
+    """
+    package = {
+    'schema': 'biz_words',
+    'params': {
+        'business_id': business_id
+        },
+    }
+    response = requests.get(url=url, json=package)
+    return strip_tokens_badchar(
+        pd.DataFrame(json.loads(response.text)['data'], columns=['data', 'tokens', 'star_review'])
+    )
+
+# Custom Cleaning function for current token information.
+# Remove for performance gain in future data release
+def strip_tokens_badchar(dataframe):
+    # Clean string with simple regex
+    dataframe['tokens'] = dataframe['tokens'].str.strip('\{').str.strip('\}').\
+        str.strip('"\n\n,"').str.strip('"\n"').str.split(',')
+
+    # Drop items of short length
+    def length_min(x):
+        return [word for word in x if len(word)>3]
+
+    dataframe.tokens = dataframe.tokens.apply(length_min)
+    return dataframe

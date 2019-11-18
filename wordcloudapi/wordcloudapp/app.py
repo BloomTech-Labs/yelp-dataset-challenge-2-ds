@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
+import os
 import requests
 from decouple import config
 from flask_cors import CORS, cross_origin
 from .timeseries import timeseries
-from .models import DB, reviews
 
 
 def create_app():
@@ -23,4 +23,3 @@ def create_app():
         return result
 
     return app
-
