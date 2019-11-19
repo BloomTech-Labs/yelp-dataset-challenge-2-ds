@@ -68,7 +68,7 @@ def read_job(job):
     return response
 
 
-def generate_job(savepath):
+def generate_job(savepath, job_type):
     bucket = get_bucket()
     job_data = {
         'File': savepath
