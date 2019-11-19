@@ -23,10 +23,11 @@ class Business(Base):
     state = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
-    postalcode = Column(Integer)
+    postal_code = Column(Integer)
     review_count = Column(Integer)
     stars = Column(Integer)
-    isopen = Column(Integer)
+    is_open = Column(Integer)
+    hours = Column(String)
     attributes = Column(String)
     categories = Column(String)
 
