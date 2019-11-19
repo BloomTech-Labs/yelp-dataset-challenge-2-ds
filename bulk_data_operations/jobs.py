@@ -5,6 +5,7 @@ Jobs Library
 import s3
 import json
 import os
+import pandas as pd
 
 
 class g():
@@ -74,6 +75,28 @@ def delete_s3_file(objectpath):
 
 def delete_local_file(filepath):
     os.remove(filepath)
+
+
+####################
+###Load/Transform###
+####################
+
+def load_data(filename):
+    """Load Data
+        Loads data into Pandas DataFrame
+
+        param filename: full filepath + filename or s3 bucket object name.
+        type filename: string
+        returns: DataFrame
+    """
+    filetype = filename.split('.')[-1]
+    print('Detected {} file.'.format(filetype))
+
+    if filetype == 'json':
+        data = pd.read_json(filename)
+    else:  # Default to parquet type
+        data = pd.read_parquet(filename)
+    return data
 
 
 if __name__ == "__main__":

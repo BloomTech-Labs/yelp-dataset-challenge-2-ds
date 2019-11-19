@@ -10,7 +10,7 @@ from functools import partial
 import logging
 import os
 from jobs import get_jobs, pop_current_job, read_job,\
-     download_data, delete_local_file, delete_s3_file
+     download_data, delete_local_file, delete_s3_file, load_data
 
 
 ###Logging###
@@ -142,17 +142,17 @@ if __name__ == "__main__":
 
         # Load the data
         datapath = download_data(asset)
-        # TODO: Type check and read in data
-        data = pd.read_parquet(datapath)
+        data = load_data(datapath)
 
-        # Hack fix for bad jobs on first run.  REMOVE THIS. UNFUCK THIS
-        data = data.rename(columns={
-            'tokens':'token',
-            'lemmas':'lemma',
-            'noun_chunks':'noun_chunk',
-            'vectors':'token_vector'
-        })
-        # REMOVE THE LINE ABOVE
+        # TODO REMOVE THIS HACK
+        if get_source_from_name(asset) == 'reviews':
+            data = data.rename(columns={
+                'tokens':'token',
+                'lemmas':'lemma',
+                'noun_chunks':'noun_chunk',
+                'vectors':'token_vector'
+            })
+        # REMOVE THE LINES ABOVE
 
         # Build query package
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
