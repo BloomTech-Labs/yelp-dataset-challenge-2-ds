@@ -145,7 +145,7 @@ if __name__ == "__main__":
         data = load_data(datapath)
 
         # TODO REMOVE THIS HACK
-        if get_source_from_name(asset) == 'reviews':
+        if get_source_from_name(asset) in ['reviews', 'tips']:
             data = data.rename(columns={
                 'tokens':'token',
                 'lemmas':'lemma',

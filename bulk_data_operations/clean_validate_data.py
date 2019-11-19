@@ -12,6 +12,7 @@ from math import ceil
 import os
 from io import BytesIO
 import json
+from jobs import generate_job
 
 
 class g():
@@ -65,21 +66,8 @@ def load_data(filename):
     print('Detected {} file.'.format(filetype))
 
     if filetype == 'json':
-        data = pd.read_json(filename, lines=True)
+        data = pd.read_json(filename)
     return data
-
-
-def generate_job(savepath, job_type):
-    bucket = get_bucket()
-    job_data = {
-        'File': savepath
-    }
-    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
-    temp_job_path = '/tmp/'+job_name
-    with open(temp_job_path, 'w') as file:
-        json.dump(job_data, file)
-    bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
-    os.remove(temp_job_path)
 
 
 def write_data(data, savepath, dry_run=True, filetype='parquet'):
@@ -103,7 +91,7 @@ def write_data(data, savepath, dry_run=True, filetype='parquet'):
         os.remove(tempfilename)
 
 
-def save_chunks(data, max_size, prefix, rootname, path):
+def save_chunks(data, max_size, prefix, rootname, path, filetype='parquet'):
     """Save Chunks
         Bin dataframe and save into parquet files at defined
         max_size intervals.
@@ -124,9 +112,9 @@ def save_chunks(data, max_size, prefix, rootname, path):
     # Write bins
     savepaths = []
     for count, frame in enumerate(binned_frames):
-        savepath = path + prefix + '_' + rootname + '_' + str(count)
+        savepath = path + prefix + '_' + rootname + '_' + str(count) + '.' + filetype
         savepaths.append(savepath)
-        write_data(data=frame, savepath=savepath, dry_run=False)
+        write_data(data=frame, savepath=savepath, dry_run=False, filetype=filetype)
     return savepaths
 
 
@@ -150,10 +138,6 @@ def bin_dataframe(data, max_size):
             binned_frames.append(
                 data.loc[start:stop, :]
             )
-        # print('start {} stop {}'.format(start, stop))
-        # print('Bin created: length', len(binned_frames[i]))
-        # print(binned_frames[i].head(1))
-        # print(binned_frames[i].tail(1))
     return binned_frames
 
 
@@ -163,7 +147,17 @@ def bin_dataframe(data, max_size):
 
 def tvf_business(filename):
     print('Beginning business data transformation.')
-    raise NotImplementedError
+    data = load_data(filename)
+    savepaths = save_chunks(
+        data=data,
+        max_size=30000,
+        prefix='clean_transformed',
+        rootname='business',
+        path='Processed/',
+        filetype='json'
+        )
+    for path in savepaths:
+        generate_job(savepath=path, job_type='POST')
 
 
 def tvf_user(filename):
@@ -276,13 +270,13 @@ if __name__ == "__main__":
     checkins = 'checkin.json'
     reviews = 'review.json'
     users = 'user.json'
-    businesses = 'business.json'
+    businesses = 'business_transformed.json'
 
     # route_data(photos)
     # route_data(checkins)
     # route_data(tips)
-    route_data(users)
-    route_data(reviews)
-    # route_data(businesses)
+    # route_data(users)
+    # route_data(reviews)
+    route_data(businesses)
 
     ## Completed 11/13/2019

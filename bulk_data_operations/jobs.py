@@ -68,6 +68,19 @@ def read_job(job):
     return response
 
 
+def generate_job(savepath):
+    bucket = get_bucket()
+    job_data = {
+        'File': savepath
+    }
+    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job'])
+    temp_job_path = '/tmp/'+job_name
+    with open(temp_job_path, 'w') as file:
+        json.dump(job_data, file)
+    bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
+    os.remove(temp_job_path)
+
+
 def delete_s3_file(objectpath):
     bucket = get_bucket()
     return bucket.delete(objectpath)
