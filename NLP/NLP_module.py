@@ -1,5 +1,5 @@
 # !pip install pyarrow
-from awstools.awstools import s3
+import s3
 import NLP_processing
 import pandas as pd
 import json
@@ -122,6 +122,6 @@ while is_nlp_jobs_empty(bucket) == False:
     processed_df = process(df)
     put_in_processed(processed_df, path)
     delete_last_job(bucket)
-    break
+    break  # Remove break to run all jobs.  For Testing/Timing Purposes only.
 
 
