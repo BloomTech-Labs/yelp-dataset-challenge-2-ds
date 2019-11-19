@@ -1,14 +1,17 @@
-from flask import Flask, request
-import os
+from flask import Flask, jsonify, request
+import requests
 from decouple import config
 from flask_cors import CORS, cross_origin
 from .timeseries import timeseries
+from .models import DB, reviews
 
 
 def create_app():
     app = Flask(__name__)
     CORS(app)
+    app.config['SQLALCHEMY_DATABASE_URI'] = config('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    DB.init_app(app)
 
     @app.route('/')
     @app.route('/index')
@@ -20,3 +23,4 @@ def create_app():
         return result
 
     return app
+
