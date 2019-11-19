@@ -1,0 +1,22 @@
+TO DO:
+
+-transition for beginning
+-color star rating
+-legend
+-time label
+-dropdown
+-search box
+-make new words light up?
+-add workers, heroku api
+
+background color: #020123
+
+text: #d25a94
+
+    font-family: "Avenir LT Light";
+    font-weight: lighter;
+    font-size: 16pt;
+    fill: #d25a94;
+    color: #d25a94;
+    margin-bottom: 50px;
+    letter-spacing: 2px;
