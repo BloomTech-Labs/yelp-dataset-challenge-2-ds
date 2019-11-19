@@ -7,7 +7,7 @@ Routes to validator.
 If passes, saves data in defined chunks.
 """
 import pandas as pd
-from awstools import s3
+import s3
 from math import ceil
 import os
 from io import BytesIO
