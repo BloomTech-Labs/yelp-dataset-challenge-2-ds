@@ -32,8 +32,12 @@ class Bucket():
         return 'AWS S3 Bucket <{}>'.format(self.bucket_name)
 
     def setup_env(self, config_type):
-        credential_file = os.path.join(os.getcwd(), '.aws') + '/credentials'
-        load_aws_environment(credential_file=credential_file)
+        try:
+            credential_file = os.path.join(os.getcwd(), '.aws', 'credentials')
+            load_aws_environment_file(credential_file=credential_file)
+        except:
+            print('Could not find credential file. Defaulting to manual setup.')
+            set_aws_environ()
 
     def get(self, object_name, save_name=None, **kwargs):
         return download_file(
@@ -46,6 +50,8 @@ class Bucket():
     def save(self, file_name, object_name=None):
         upload_file(file_name, self.bucket_name, object_name=object_name)
 
+    def delete(self, object_name):
+        delete_object(bucket_name=self.bucket_name, object_name=object_name)
 
     def dir(self, all=False):
         if all:
@@ -61,7 +67,7 @@ class Bucket():
             contents = []
             for key in objects:
                 contents.append(key)
-            
+
         # If the search returned something, slice off the first result because that will be the directory itself
         if contents != []:
             return contents[1:]
@@ -69,30 +75,14 @@ class Bucket():
         else:
             raise NameError("No directory starts with " + dir + " prefix.")
 
-    def delete_object(self, object_name):
-    #     """Delete an object from an S3 bucket
-
-    #     :param bucket_name: string
-    #     :param object_name: string
-    #     :return: True if the referenced object was deleted, otherwise False
-    #     """
-
-        # Delete the object
-        s3 = boto3.client('s3')
-        try:
-            s3.delete_object(Key=object_name, Bucket=self.bucket_name)
-        except ClientError as e:
-            logging.error(e)
-            return False
-        return True
-
     def find(self, search=None, prefix=None, suffix=None):
         return get_matching_s3_keys(
             bucket_contents=self.contents,
             search=search,
             prefix=prefix,
             suffix=suffix)
-            
+
+
 class ProgressPercentage(object):
     def __init__(self, filename):
         self._filename = filename
@@ -119,7 +109,17 @@ def get_client(setup=False):
         setup_aws()
     # Setup connection with credentials and yield created client.
     #   Allows for usage: with get_client() as client: client...
-    client = boto3.client('s3')
+    try:
+        client = boto3.client('s3')
+    except:
+        print('Client could not read credential file.  Looking for os environment variables')
+        client = boto3.client(
+            's3',
+            aws_access_key_id=os.environ["aws_access_key_id"],
+            aws_secret_access_key=os.environ["aws_secret_access_key"]
+            )
+        print('Could not establish client')
+        raise
     yield client
 
 
@@ -154,10 +154,10 @@ def setup_aws(key_id=None, secret_key=None, region=None):
     create_file(cred_path, "\n".join([profile, key_id, secret_key]))
     create_file(config_path, "\n".join([profile, region]))
     # Load env files
-    load_aws_environment(credential_file=cred_path, profile='default')
+    load_aws_environment_file(credential_file=cred_path, profile='default')
 
 
-def load_aws_environment(credential_file=None, profile='default'):
+def load_aws_environment_file(credential_file=None, profile='default'):
     """Set local environment variables.  Can be run alone if
     credential_file already created.
 
@@ -180,6 +180,12 @@ def load_aws_environment(credential_file=None, profile='default'):
     os.environ['AWS_SHARED_CREDENTIALS_FILE'] = credential_file
     os.environ['AWS_PROFILE'] = profile
 
+def set_aws_environ(key_id=None, secret_key=None):
+    if key_id is None or secret_key is None:
+        key_id = 'aws_access_key_id = ' + input("Enter your aws_access_key_id: ")
+        secret_key = 'aws_secret_access_key = ' + input("Enter your aws_secret_access_key: ")
+    os.environ["aws_access_key_id"] = key_id
+    os.environ["aws_secret_access_key"] = secret_key
 
 def create_file(filename, line):
     """
@@ -234,7 +240,6 @@ def get_regions(region_file='aws_regions.txt'):
         "me-south-1",
     ]
 
-
 def check_region(region):
     """
     Check available regions for input validation.  Returns self if valid, else recursively asks for new region.
@@ -284,7 +289,7 @@ def list_buckets(setup=False):
     """
     if setup:
         credential_file = os.path.join(os.getcwd(), '.aws') + '/credentials'
-        load_aws_environment(credential_file=credential_file)
+        load_aws_environment_file(credential_file=credential_file)
 
     with get_client() as connection:
         response = connection.list_buckets()
@@ -317,7 +322,6 @@ def upload_file(file_path, bucket, object_name=None):
             return False
         return True
 
-
 def download_file(bucket_name, object_name, save_name=None, **kwargs):
     # Download file to memory if save_name == None
     #   This may not work for non string-representative data.
@@ -339,9 +343,22 @@ def download_file(bucket_name, object_name, save_name=None, **kwargs):
                 bucket_name, object_name, save_name
                 )
 
-# Not currently working, maybe helpful for reading jobs
-# def download_fileobj(Bucket, Key, Fileobj, ExtraArgs=None, Callback=None, Config=None)
-#         s3.download_fileobj(Bucket, Key, data)
+
+def delete_object(bucket_name, object_name):
+#     """Delete an object from an S3 bucket
+
+#     :param bucket_name: string
+#     :param object_name: string
+#     :return: True if the referenced object was deleted, otherwise False
+#     """
+    # Delete the object
+    with get_client() as connection:
+        try:
+            connection.delete_object(Key=object_name, Bucket=bucket_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        return True
 
 
 def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
@@ -357,7 +374,6 @@ def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
         if key.startswith(prefix) and key.endswith(suffix):
             yield key
     return response
-
 
 ## Adaped from https://alexwlchan.net/2019/07/listing-s3-keys/
 ## Special thanks to Alex Chan
@@ -396,7 +412,6 @@ def get_matching_s3_objects(bucket, prefix="", suffix=""):
                 key = obj["Key"]
                 if key.endswith(suffix):
                     yield obj
-
 
 def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None):
     """

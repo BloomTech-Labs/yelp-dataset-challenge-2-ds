@@ -27,8 +27,8 @@ def get_db():
     if 'db' not in g:
         db_logger.info('DB connection not found. Attempting connection to {}.'.format(current_app.config['DATABASE_URI']))
         try:
-            engine = create_engine(current_app.config['DATABASE_URI'])
-            g.db = engine.connect()
+            g.engine = create_engine(current_app.config['DATABASE_URI'])
+            g.db = g.engine.connect()
         except:
             db_logger.error('Could not establish connection.  Aborting.')
             raise ConnectionError
@@ -50,9 +50,10 @@ def get_session():
 
 def close_db(e=None):
     db = g.pop('db', None)
-
+    engine = g.pop('engine', None)
     if db is not None:
         db.close()
+        engine.dispose()
 
 
 def init_db():
