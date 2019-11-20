@@ -6,17 +6,12 @@ import json
 import spacy
 import os
 
-
 import logging
 
 ###Logging###
 main_logger = logging.getLogger(__name__+" NLP Controller")
 log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
-
-
-# Need to download en_core_web_lg-2.2.0
-print('loaded en_core_web_lg')
 
 # Need to already have access to s3 bucket
 # Run the line below with the keys to get access

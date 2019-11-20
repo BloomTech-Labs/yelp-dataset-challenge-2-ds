@@ -13,9 +13,17 @@ import pandas as pd
 import dask.dataframe as dd
 import time
 
+
+# downloading spacy dependencies
+os.system('pip install spacy')
+import spacy
+os.system('python -m spacy download en_core_web_lg')
+nlp = spacy.load('en_core_web_lg') 
+
 from jobs import get_jobs, pop_current_job, read_job, get_bucket, \
      download_data, delete_local_file, delete_s3_file, load_data, \
          write_data, generate_job
+
 
 #############
 ###Logging###
@@ -24,14 +32,41 @@ from jobs import get_jobs, pop_current_job, read_job, get_bucket, \
 log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
+
+### Processing functions ###
+def process_text(text):
+    doc = nlp(text)
+
+    # Defining parts of speech to keep in tokens and lemmas
+    POS = ['ADJ', 'NOUN', 'PROPN', 'VERB', 'ADV', 'INTJ']
+
+    # Getting lemmas and tokens
+    lemmas = []
+    tokens = []
+    for token in doc:
+        if ((token.is_stop != True) 
+        and (token.is_punct != True) 
+        and (token.pos_ in POS)):
+            tokens.append(token.text)
+            lemmas.append(token.lemma_)
+    return (tokens, lemmas)
+
 ######################
 ###Helper Functions###
 ######################
+  
+def get_tokens(tuple):
+    return tuple[0]
 
+def get_lemmas(tuple):
+    return tuple[1]
 
-
-###INSERT CLEANING/PROCESSING FUNCTION HERE###
-
+def filter_tokens(df):
+    df['tuple'] = df.text.apply(process_text)
+    df['tokens'] = df.tuple.apply(get_tokens)
+    df['lemmas'] = df.tuple.apply(get_lemmas)
+    df = df.filter(['review_id', 'tokens', 'lemmas']) 
+    return df
 
 if __name__ == "__main__":
     main_logger = logging.getLogger(__name__+" Token Fixer")
@@ -51,6 +86,7 @@ if __name__ == "__main__":
         # Load the data
         datapath = download_data(asset)
         data = load_data(datapath)
+        filtered = filter_tokens(data)
 
         # DASK: Partition Data
         num_vcpu = 6
