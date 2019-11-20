@@ -18,6 +18,9 @@ nlp = spacy.load('en_core_web_lg')
 
 from jobs import get_jobs, pop_current_job, read_job,\
      download_data, delete_local_file, delete_s3_file, load_data
+from NLP_module import get_df
+
+# downloading and loading spacy models
 
 ###Logging###
 log_path = os.path.join(os.getcwd(), 'debug.log')
@@ -55,29 +58,9 @@ def filter_tokens(df):
     df = df.filter(['review_id', 'tokens', 'lemmas']) 
     return df
 
-if __name__ == "__main__":
-    main_logger = logging.getLogger(__name__+" Token Fixer")
+df = get_df('Clean/clean_review_103')
 
-    num_jobs = len(get_jobs('retoken')) # No module creates retoken jobs.  Manually create these.
+filtered = filter_tokens(df)
+filtered.head()
 
-    for i in range(num_jobs):
-        # Get a job and read out the datapath
-        current_job = pop_current_job()
-        asset = read_job(current_job)['Key']
-
-        main_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
-
-        # Load the data
-        datapath = download_data(asset)
-        data = load_data(datapath)
-        filtered = filter_tokens(data)
-
-        # TODO still need to write to the database
-        # filtered is just a filtered database
-
-        ### import modin.pandas as pd (works the same but allows multithreading)
-
-        # Cleanup
-        delete_local_file(datapath)
-        delete_s3_file(current_job)
-        main_logger.info("Deleted Job: {}".format(current_job))
+os.system('echo done')
