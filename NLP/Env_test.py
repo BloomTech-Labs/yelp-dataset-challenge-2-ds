@@ -60,7 +60,9 @@ def filter_tokens(df):
 
 df = get_df('Clean/clean_review_103')
 
+df = df.head(100)
+
 filtered = filter_tokens(df)
-filtered.head()
+print(filtered.tokens.iloc[0])
 
 os.system('echo done')
