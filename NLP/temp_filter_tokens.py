@@ -22,7 +22,7 @@ from jobs import get_jobs, pop_current_job, read_job,\
 log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
-###CLEANING/PROCESSING FUNCTION###
+### Processing functions ###
 def process_text(text):
     doc = nlp(text)
 
@@ -69,17 +69,14 @@ if __name__ == "__main__":
         # Load the data
         datapath = download_data(asset)
         data = load_data(datapath)
+        filtered = filter_tokens(data)
 
+        # TODO still need to write to the database
+        # filtered is just a filtered database
 
-        ### INSERT TOKEN CLEANING FUNCTION HERE###
-        ### takes df
-        ### returns column with review_id, and filtered tokens
         ### also note version of spacy to use / how to download it
-        ### only keep adjectives, nouns, verbs, adverbs, interjections
         ### test in clean environment, with install commands
         ### import modin.pandas as pd (works the same but allows multithreading)
-
-
 
         # Cleanup
         delete_local_file(datapath)
