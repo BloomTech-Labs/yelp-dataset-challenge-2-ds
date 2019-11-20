@@ -25,7 +25,6 @@ scipy = "*"
 ujson = "*"
 jupyter = "*"
 spacy = "*"
-os = "*"
 
 [requires]
 python_version = "3.7"
