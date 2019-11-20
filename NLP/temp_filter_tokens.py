@@ -9,6 +9,11 @@ Goal:  Scan tokens in the token column of a dataframe
 
 import logging
 import os
+import spacy
+
+# python -m spacy download en_core_web_lg
+
+nlp = spacy.load('en_core_web_lg') 
 
 from jobs import get_jobs, pop_current_job, read_job,\
      download_data, delete_local_file, delete_s3_file, load_data
@@ -17,9 +22,37 @@ from jobs import get_jobs, pop_current_job, read_job,\
 log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
+###CLEANING/PROCESSING FUNCTION###
+def process_text(text):
+    doc = nlp(text)
 
-###INSERT CLEANING/PROCESSING FUNCTION HERE###
+    # Defining parts of speech to keep in tokens and lemmas
+    POS = ['ADJ', 'NOUN', 'PROPN', 'VERB', 'ADV', 'INTJ']
 
+    # Getting lemmas and tokens
+    lemmas = []
+    tokens = []
+    for token in doc:
+        if ((token.is_stop != True) 
+        and (token.is_punct != True) 
+        and (token.pos_ in POS)):
+            tokens.append(token.text)
+            lemmas.append(token.lemma_)
+
+    return (tokens, lemmas)
+
+def get_tokens(tuple):
+    return tuple[0]
+
+def get_lemmas(tuple):
+    return tuple[1]
+
+def filter_tokens(df):
+    df['tuple'] = df.text.apply(process_text)
+    df['tokens'] = df.tuple.apply(get_tokens)
+    df['lemmas'] = df.tuple.apply(get_lemmas)
+    df = df.filter(['review_id', 'tokens', 'lemmas']) 
+    return df
 
 if __name__ == "__main__":
     main_logger = logging.getLogger(__name__+" Token Fixer")
@@ -38,7 +71,14 @@ if __name__ == "__main__":
         data = load_data(datapath)
 
 
-        ###INSERT TOKEN CLEANING FUNCTION HERE###
+        ### INSERT TOKEN CLEANING FUNCTION HERE###
+        ### takes df
+        ### returns column with review_id, and filtered tokens
+        ### also note version of spacy to use / how to download it
+        ### only keep adjectives, nouns, verbs, adverbs, interjections
+        ### test in clean environment, with install commands
+        ### import modin.pandas as pd (works the same but allows multithreading)
+
 
 
         # Cleanup
