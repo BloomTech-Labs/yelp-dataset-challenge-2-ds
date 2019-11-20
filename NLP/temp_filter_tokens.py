@@ -42,6 +42,7 @@ if __name__ == "__main__":
 
     for i in range(num_jobs):
         # Get a job and read out the datapath
+        get_jobs(job_type='retoken')
         current_job = pop_current_job()
         asset = read_job(current_job)['File']
 
@@ -65,7 +66,7 @@ if __name__ == "__main__":
         main_logger.info("{} processed in {}".format(len(data), stop-start))
 
         # Write Data to s3
-        savepath = asset.split('/')[-1].split('.')[0] + '_retokenize'
+        savepath = asset.split('/')[-1].split('.')[0] + '_retoken'
         write_data(data=output, savepath=savepath)
 
         # Generate POST Job

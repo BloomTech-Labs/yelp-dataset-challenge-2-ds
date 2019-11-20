@@ -6,6 +6,7 @@ import s3
 import json
 import os
 import pandas as pd
+from io import BytesIO
 
 
 class g():
@@ -22,7 +23,7 @@ g = g()
 
 def get_bucket(bucket_name='yelp-data-shared-labs18'):
     if g.bucket == None:
-        bucket = s3.Bucket(bucket)
+        bucket = s3.Bucket(bucket_name)
         g.bucket = bucket
         return g.bucket
     return g.bucket
@@ -63,7 +64,7 @@ def get_jobs(job_type='post'):
     bucket = get_bucket()
     if g.job_list == None:
         jobs = []
-        for job in bucket.find('Jobs/', suffix='json'):
+        for job in bucket.find('Jobs/'):
             if job_type in job.lower():
                 jobs.append(job)
         g.job_list = jobs
@@ -92,7 +93,7 @@ def generate_job(savepath, job_type):
     job_data = {
         'File': savepath
     }
-    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job'])
+    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
     temp_job_path = '/tmp/'+job_name
     with open(temp_job_path, 'w') as file:
         json.dump(job_data, file)

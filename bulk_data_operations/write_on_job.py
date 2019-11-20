@@ -134,25 +134,12 @@ if __name__ == "__main__":
     for i in range(num_jobs):
         # Get a job and read out the datapath
         current_job = pop_current_job()
-        asset = read_job(current_job)['Key']
-        # Hack fix for bad jobs on first run.  REMOVE THIS.
-        asset = asset.replace('Clean/', 'Processed/')
-        # REMOVE THE LINE ABOVE
+        asset = read_job(current_job)['File']
         write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
         # Load the data
         datapath = download_data(asset)
         data = load_data(datapath)
-
-        # TODO REMOVE THIS HACK
-        if get_source_from_name(asset) in ['reviews', 'tips']:
-            data = data.rename(columns={
-                'tokens':'token',
-                'lemmas':'lemma',
-                'noun_chunks':'noun_chunk',
-                'vectors':'token_vector'
-            })
-        # REMOVE THE LINES ABOVE
 
         # Build query package
         package = df_to_query(df=data, tablename=get_source_from_name(asset))
