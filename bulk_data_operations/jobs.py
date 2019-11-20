@@ -20,9 +20,9 @@ g = g()
 ###s3 Control Functions###
 ##########################
 
-def get_bucket():
+def get_bucket(bucket_name='yelp-data-shared-labs18'):
     if g.bucket == None:
-        bucket = s3.Bucket('yelp-data-shared-labs18')
+        bucket = s3.Bucket(bucket)
         g.bucket = bucket
         return g.bucket
     return g.bucket
@@ -34,6 +34,25 @@ def download_data(object_path, save_path='/tmp/'):
     return save_path
 
 
+def write_data(data, savepath, dry_run=True, filetype='parquet'):
+    print('Saving {}'.format(savepath))
+    if dry_run:
+        print('Executing Dry Run to {}'.format(savepath))
+        file_stream = BytesIO()
+        data.to_parquet(file_stream)
+        print(pd.read_parquet(file_stream).head())
+    else:
+        print('Commencing upload of {} to S3'.format(savepath))
+        tempfilename = '/tmp/'+savepath.split('/')[-1]
+        if filetype == 'parquet':
+            data.to_parquet(tempfilename)
+        elif filetype == 'json':
+            data.to_json(tempfilename, orient='records')
+        else:
+            raise TypeError("Only parquet or json saving supported")
+        bucket = get_bucket()
+        bucket.save(tempfilename, savepath)
+        os.remove(tempfilename)
 
 ###########################
 ###Job Control Functions###
