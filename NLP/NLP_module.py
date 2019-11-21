@@ -8,6 +8,8 @@ import os
 
 import logging
 
+
+
 ###Logging###
 main_logger = logging.getLogger(__name__+" NLP Controller")
 log_path = os.path.join(os.getcwd(), 'debug.log')
@@ -19,13 +21,9 @@ logging.basicConfig(filename=log_path, level=logging.INFO)
 
 # Only reads .parquet files
 
-class job_list():
+    class job_list():
     def __init__(self, job_list=None):
         self.job_list = job_list
-
-new_jobs = job_list()
-bucket = s3.Bucket('yelp-data-shared-labs18')
-print('connected to bucket')
 
 # Functions
 def is_nlp_jobs_empty(bucket):
@@ -110,13 +108,19 @@ def generate_job(savepath, job_type):
     bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
     os.remove(temp_job_path)
 
-# Main while loop
-while is_nlp_jobs_empty(bucket) == False:
-    path = read_next_job(bucket)
-    df = get_df(path)
-    processed_df = process(df)
-    put_in_processed(processed_df, path)
-    delete_last_job(bucket)
-    break  # Remove break to run all jobs.  For Testing/Timing Purposes only.
+if __name__ == "__main__":
+
+    new_jobs = job_list()
+    bucket = s3.Bucket('yelp-data-shared-labs18')
+    print('connected to bucket')
+
+    # Main while loop
+    while is_nlp_jobs_empty(bucket) == False:
+        path = read_next_job(bucket)
+        df = get_df(path)
+        processed_df = process(df)
+        put_in_processed(processed_df, path)
+        delete_last_job(bucket)
+        break  # Remove break to run all jobs.  For Testing/Timing Purposes only.
 
 
