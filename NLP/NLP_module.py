@@ -21,7 +21,7 @@ logging.basicConfig(filename=log_path, level=logging.INFO)
 
 # Only reads .parquet files
 
-    class job_list():
+class job_list():
     def __init__(self, job_list=None):
         self.job_list = job_list
 
