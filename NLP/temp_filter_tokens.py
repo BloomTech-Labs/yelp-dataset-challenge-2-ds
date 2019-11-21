@@ -10,12 +10,12 @@ Goal:  Scan tokens in the token column of a dataframe
 import logging
 import os
 import pandas as pd
+import dask
 import dask.dataframe as dd
-import dask.multiprocessing
 import time
 
 # Dask configuration
-# dask.config.set(scheduler='processes')  # overwrite default with multiprocessing scheduler
+dask.config.set(scheduler='processes')  # overwrite default with multiprocessing scheduler
 
 
 # downloading spacy dependencies
@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
         # DASK: Partition Data
         num_vcpu = 8
-        daskdf = dd.from_pandas(data, npartitions=num_vcpu)
+        daskdf = dd.from_pandas(data, npartitions=4*num_vcpu)
         print("Dask dataframe created.")
         start = time.time()
         # DASK: Map function to data
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
         # Write Data to s3
         savepath = asset.split('/')[-1].split('.')[0] + '_retoken'
-        write_data(data=output, savepath=savepath)
+        write_data(data=output, savepath=savepath, dry_run=False)
 
         # Generate POST Job
         generate_job(savepath, 'POST')
