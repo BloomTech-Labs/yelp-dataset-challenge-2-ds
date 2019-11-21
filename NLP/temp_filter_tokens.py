@@ -96,7 +96,7 @@ if __name__ == "__main__":
         data = load_data(datapath)
 
         # DASK: Partition Data
-        num_vcpu = 8
+        num_vcpu = 16
         daskdf = dd.from_pandas(data, npartitions=4*num_vcpu)
         print("Dask dataframe created.")
         start = time.time()
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
         # DASK: Execute Compute - get Pandas dataframe back
         print("Executing Dask compute.")
-        output = result.compute()
+        output = result.compute(num_workers=num_vcpu)
         output = output.filter(['review_id', 'tip_id', 'token', 'lemma'])
 
         stop = time.time()

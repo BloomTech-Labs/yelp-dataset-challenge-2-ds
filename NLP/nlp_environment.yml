@@ -107,6 +107,7 @@ dependencies:
   - sip=4.19.8=py37hf484d3e_0
   - six=1.13.0=py37_0
   - smart_open=1.8.4=py_0
+  - spacy==2.2.2
   - statsmodels=0.10.1=py37hdd07704_0
   - termcolor=1.1.0=py37_1
   - tk=8.6.8=hbc83047_0
@@ -155,7 +156,6 @@ dependencies:
     - semver==2.8.1
     - send2trash==1.5.0
     - soupsieve==1.9.4
-    - spacy==2.2.2
     - sputnik==0.9.3
     - squarify==0.4.3
     - srsly==0.1.0
