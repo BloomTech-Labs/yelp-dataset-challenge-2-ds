@@ -7,6 +7,9 @@ import json
 import os
 import pandas as pd
 from io import BytesIO
+import logging
+
+job_logger = logging.getLogger(__name__)
 
 
 class g():
@@ -31,6 +34,7 @@ def get_bucket(bucket_name='yelp-data-shared-labs18'):
 def download_data(object_path, save_path='/tmp/'):
     bucket = get_bucket()
     save_path = save_path + object_path.split('/')[-1]
+    job_logger.info("Downloading {} to {}".format(object_path, save_path))
     bucket.get(object_path, save_path)
     return save_path
 
@@ -44,12 +48,14 @@ def write_data(data, savepath, dry_run=True, filetype='parquet'):
         print(pd.read_parquet(file_stream).head())
     else:
         print('Commencing upload of {} to S3'.format(savepath))
+        job_logger.info("Uploading {} to S3".format(savepath))
         tempfilename = '/tmp/'+savepath.split('/')[-1]
         if filetype == 'parquet':
             data.to_parquet(tempfilename)
         elif filetype == 'json':
             data.to_json(tempfilename, orient='records')
         else:
+            job_logger.error("Only parquet or json saving supported")
             raise TypeError("Only parquet or json saving supported")
         bucket = get_bucket()
         bucket.save(tempfilename, savepath)
