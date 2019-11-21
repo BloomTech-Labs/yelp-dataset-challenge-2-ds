@@ -145,9 +145,11 @@ dependencies:
     - pluggy==0.12.0
     - prometheus-client==0.7.1
     - py==1.8.0
+    - pyarrow==0.15.1
     - pyldavis==2.1.2
     - pyrsistent==0.15.4
     - pytest==5.0.1
+    - python-decouple==3.3
     - qtconsole==4.5.5
     - semver==2.8.1
     - send2trash==1.5.0
