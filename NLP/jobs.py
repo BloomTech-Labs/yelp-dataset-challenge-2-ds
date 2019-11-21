@@ -67,7 +67,7 @@ def read_job(job):
     delete_local_file(temp)
     return response
 
-
+## savepath = object path in s3 (thing you want to process)
 def generate_job(savepath, job_type):
     bucket = get_bucket()
     job_data = {
