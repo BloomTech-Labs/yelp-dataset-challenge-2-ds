@@ -10,12 +10,7 @@ Goal:  Scan tokens in the token column of a dataframe
 import logging
 import os
 import pandas as pd
-import dask
-import dask.dataframe as dd
 import time
-
-# Dask configuration
-dask.config.set(scheduler='processes')  # overwrite default with multiprocessing scheduler
 
 
 # downloading spacy dependencies
@@ -40,9 +35,7 @@ logging.basicConfig(filename=log_path, level=logging.INFO)
 ### Processing functions ###
 ############################
 
-def process_text(text):
-    doc = nlp(text)
-
+def process_doc(doc):
     # Defining parts of speech to keep in tokens and lemmas
     POS = ['ADJ', 'NOUN', 'PROPN', 'VERB', 'ADV', 'INTJ']
 
@@ -64,7 +57,8 @@ def get_lemmas(tuple):
     return tuple[1]
 
 def filter_tokens(df):
-    df['tuple'] = df.text.apply(process_text)
+    df['doc'] = list(nlp.pipe(df.text.to_numpy(), batch_size=100, disable=["parser", "ner"]))
+    df['tuple'] = df.doc.apply(process_doc)
     df['token'] = df.tuple.apply(get_tokens)
     df['lemma'] = df.tuple.apply(get_lemmas)
     # df = df.filter(['review_id', 'tip_id', 'tokens', 'lemmas']) # Test with Dask.
@@ -95,18 +89,10 @@ if __name__ == "__main__":
         datapath = download_data(asset)
         data = load_data(datapath)
 
-        # DASK: Partition Data
-        num_vcpu = 8
-        daskdf = dd.from_pandas(data, npartitions=4*num_vcpu)
-        print("Dask dataframe created.")
+        # Run NLP Process
         start = time.time()
-        # DASK: Map function to data
-        print("Mapping function to dask dataframes")
-        result = daskdf.map_partitions(filter_tokens)
 
-        # DASK: Execute Compute - get Pandas dataframe back
-        print("Executing Dask compute.")
-        output = result.compute()
+        output = filter_tokens(data)
         output = output.filter(['review_id', 'tip_id', 'token', 'lemma'])
 
         stop = time.time()
@@ -121,6 +107,6 @@ if __name__ == "__main__":
 
         # Cleanup
         delete_local_file(datapath)
-        # delete_s3_file(current_job)
+        delete_s3_file(current_job)
         main_logger.info("Deleted Job: {}".format(current_job))
         break # Test break (1 at a time)
