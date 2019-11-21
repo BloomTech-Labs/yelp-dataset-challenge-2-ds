@@ -15,13 +15,13 @@ import dask.multiprocessing
 import time
 
 # Dask configuration
-dask.config.set(scheduler='processes')  # overwrite default with multiprocessing scheduler
+# dask.config.set(scheduler='processes')  # overwrite default with multiprocessing scheduler
 
 
 # downloading spacy dependencies
-os.system('pip install spacy')
+# os.system('pip install spacy')
 import spacy
-os.system('python -m spacy download en_core_web_lg')
+# os.system('python -m spacy download en_core_web_lg')
 nlp = spacy.load('en_core_web_lg')
 
 from jobs import get_jobs, pop_current_job, read_job, get_bucket, \
@@ -94,16 +94,15 @@ if __name__ == "__main__":
         # Load the data
         datapath = download_data(asset)
         data = load_data(datapath)
-        data = data.iloc[0:100] # Test sample
 
         # DASK: Partition Data
-        num_vcpu = 4
+        num_vcpu = 8
         daskdf = dd.from_pandas(data, npartitions=num_vcpu)
         print("Dask dataframe created.")
         start = time.time()
         # DASK: Map function to data
         print("Mapping function to dask dataframes")
-        result = daskdf.map_partitions(filter_tokens, meta=data)
+        result = daskdf.map_partitions(filter_tokens)
 
         # DASK: Execute Compute - get Pandas dataframe back
         print("Executing Dask compute.")
