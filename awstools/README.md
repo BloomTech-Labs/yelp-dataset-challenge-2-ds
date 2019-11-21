@@ -58,10 +58,14 @@ bucket.save(test_path, 'upload_test.txt')
 
 > bash Miniconda3-latest-Linux-x86_64.sh
 
-3. Clone this repository.
+3. Update anaconda
+
+> conda update -n base -c defaults conda
+
+4. Clone this repository.
 
 > git clone https://github.com/Lambda-School-Labs/yelp-dataset-challenge-2-ds.git
 
-3. Setup environment
+5. Setup environment
 
 > conda env create -f <filename>
