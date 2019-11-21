@@ -50,7 +50,7 @@ def add_sentiment(df):
     df['sentiment'] = df.text.apply(process_text)
     df['polarity'] = df.sentiment.apply(get_polarity)
     df['objectivity'] = df.sentiment.apply(get_objectivity)
-    df = df.filter(['review_id', 'polarity', 'objectivity']) 
+    df = df.filter(['review_id', 'tip_id', 'polarity', 'objectivity']) 
     return df
 
 if __name__ == "__main__":
