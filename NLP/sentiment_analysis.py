@@ -1,8 +1,8 @@
 """
-Temporary Tokenization Fixer for Reference.
+Temporary sentiment adder for reference
 
-Goal:  Scan tokens in the token column of a dataframe
-        Create a subset df with review_id and tokens.
+Goal:  Create textblob objects from text in the text column of a dataframe
+        Subset df with review_id and sentiment columns.
         Save data to S3.
         Generate POST jobs for saved data
 """
@@ -12,7 +12,7 @@ Goal:  Scan tokens in the token column of a dataframe
 import logging
 import os
 
-# downloading spacy dependencies
+# installing / importing textblob
 os.system('pip install textblob')
 from textblob import TextBlob
 
@@ -48,15 +48,15 @@ def get_objectivity(tuple):
 
 def add_sentiment(df):
     df['sentiment'] = df.text.apply(process_text)
-    df['polarity'] = df.tuple.apply(get_polarity)
-    df['objectivity'] = df.tuple.apply(get_objectivity)
+    df['polarity'] = df.sentiment.apply(get_polarity)
+    df['objectivity'] = df.sentiment.apply(get_objectivity)
     df = df.filter(['review_id', 'polarity', 'objectivity']) 
     return df
 
 if __name__ == "__main__":
     main_logger = logging.getLogger(__name__+" Sentiment Adder")
 
-    num_jobs = len(get_jobs('sentiment')) # No module creates retoken jobs.  Manually create these.
+    num_jobs = len(get_jobs('sentiment')) # No module creates sentiment jobs.  Manually create these.
 
     for i in range(num_jobs):
         # Get a job and read out the datapath
