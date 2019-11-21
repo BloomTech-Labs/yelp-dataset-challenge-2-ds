@@ -64,6 +64,4 @@ bucket.save(test_path, 'upload_test.txt')
 
 3. Setup environment
 
-> conda create -y --name dse python==3.8
-
-> conda install -f -y -q --name dse -c conda-forge --file requirements.txt
+> conda env create -f <filename>
