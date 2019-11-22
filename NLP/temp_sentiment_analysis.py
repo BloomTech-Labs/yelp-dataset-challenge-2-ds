@@ -43,14 +43,14 @@ def process_text(text):
 def get_polarity(tuple):
     return tuple[0]
 
-def get_objectivity(tuple):
+def get_subjectivity(tuple):
     return tuple[1]
 
 def add_sentiment(df):
     df['sentiment'] = df.text.apply(process_text)
     df['polarity'] = df.sentiment.apply(get_polarity)
-    df['objectivity'] = df.sentiment.apply(get_objectivity)
-    df = df.filter(['review_id', 'tip_id', 'polarity', 'objectivity']) 
+    df['subjectivity'] = df.sentiment.apply(get_subjectivity)
+    df = df.filter(['review_id', 'tip_id', 'polarity', 'subjectivity']) 
     return df
 
 if __name__ == "__main__":
