@@ -237,5 +237,5 @@ def make_or_update_review(session, record, *args, **kwargs):
 
 def biz_words(session, params, *args, **kwargs):
     response = session.query(Review.date, Review.token, Review.stars).\
-        filter(Review.business_id==params['business_id'])
+        filter(Review.business_id==params['business_id']).order_by(Review.date)
     return {'data': response.all()}
