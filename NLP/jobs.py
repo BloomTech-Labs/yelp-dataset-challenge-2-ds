@@ -7,9 +7,16 @@ import json
 import os
 import pandas as pd
 from io import BytesIO
+import logging
+
+# Logging - no config here.  Relies on parent to configure log location & handler
+job_logger = logging.getLogger(__name__)
 
 
 class g():
+    """g, Global Class
+            Used to store repeatedly accessed information in the jobs module
+    """
     def __init__(self, bucket=None, job_list=None):
         self.bucket=bucket
         self.job_list = job_list
@@ -28,9 +35,11 @@ def get_bucket(bucket_name='yelp-data-shared-labs18'):
         return g.bucket
     return g.bucket
 
+
 def download_data(object_path, save_path='/tmp/'):
     bucket = get_bucket()
     save_path = save_path + object_path.split('/')[-1]
+    job_logger.info("Downloading {} to {}".format(object_path, save_path))
     bucket.get(object_path, save_path)
     return save_path
 
@@ -44,12 +53,14 @@ def write_data(data, savepath, dry_run=True, filetype='parquet'):
         print(pd.read_parquet(file_stream).head())
     else:
         print('Commencing upload of {} to S3'.format(savepath))
+        job_logger.info("Uploading {} to S3".format(savepath))
         tempfilename = '/tmp/'+savepath.split('/')[-1]
         if filetype == 'parquet':
             data.to_parquet(tempfilename)
         elif filetype == 'json':
             data.to_json(tempfilename, orient='records')
         else:
+            job_logger.error("Only parquet or json saving supported")
             raise TypeError("Only parquet or json saving supported")
         bucket = get_bucket()
         bucket.save(tempfilename, savepath)
@@ -87,18 +98,41 @@ def read_job(job):
     delete_local_file(temp)
     return response
 
-## savepath = object path in s3 (thing you want to process)
-def generate_job(savepath, job_type):
+def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
+    """Generate Job
+            Creates json object with necessary naming/format for interapplication
+            messaging in the Yelp Dataset Challenge project.
+
+        param objectpath: Location of file for job to act on.
+        type objectpath: str
+        param job_type: Append a jobtype to filename for search by backend modules
+        type job_type: str
+        param table_name: name of table to route job_type to (generally POST)
+        type table_name: str
+        param dry_run: Option to print expected output instead of creating and uploading job
+        type dry_run: bool (True/False)
+        param **kwargs: Extra information to be included in job in the form param: value.
+        type kwargs: str
+    """
     bucket = get_bucket()
     job_data = {
-        'File': savepath
+        'file': objectpath,
+        'tablename': tablename,
     }
-    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
+    if kwargs:
+        job_data = dict(job_data, **kwargs) # Append keyword arguments as keys in job
+
+    job_name = ''.join([job_type, '_', objectpath.split('/')[-1], '_job.json'])
     temp_job_path = '/tmp/'+job_name
-    with open(temp_job_path, 'w') as file:
-        json.dump(job_data, file)
-    bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
-    os.remove(temp_job_path)
+
+    if dry_run:
+        print('Dry Run: Saving {} to {}'.format(temp_job_path, job_name))
+        return (temp_job_path, job_name)
+    else:
+        with open(temp_job_path, 'w') as file:
+            json.dump(job_data, file)
+        bucket.save(temp_job_path, 'Jobs/{}'.format(job_name))
+        os.remove(temp_job_path)
 
 
 def delete_s3_file(objectpath):
