@@ -143,7 +143,7 @@ if __name__ == "__main__":
         data = load_data(datapath)
 
         # Build query package
-        package = df_to_query(df=data, tablename=table_name)
+        package = df_to_query(df=data, tablename=tablename)
 
         # Split package
         databunch = build_databunch(query=package, max_size=150)
