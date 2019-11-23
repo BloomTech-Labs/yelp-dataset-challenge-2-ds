@@ -98,7 +98,6 @@ def read_job(job):
     delete_local_file(temp)
     return response
 
-
 def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
     """Generate Job
             Creates json object with necessary naming/format for interapplication
