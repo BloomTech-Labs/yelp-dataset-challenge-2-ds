@@ -109,22 +109,22 @@ def run_request(bunch, url, retry_size=20):
         for mini_bunch in databunch:
             run_request(bunch=mini_bunch, url=url, retry_size=min_size)
 
+# Deprecated. Table name now in job file under key tablename
+# def get_source_from_name(filename):
+#     for table_name in tables.keys():
+#         if table_name in filename:
+#             return tables[table_name]
+#     raise NameError('Tablename not found.  Aborting.')
 
-def get_source_from_name(filename):
-    for table_name in tables.keys():
-        if table_name in filename:
-            return tables[table_name]
-    raise NameError('Tablename not found.  Aborting.')
 
-
-tables = {
-    'business': 'businesses',
-    'user': 'users',
-    'checkin': 'checkins',
-    'photo': 'photos',
-    'tip': 'tips',
-    'review': 'reviews',
-}
+# tables = {
+#     'business': 'businesses',
+#     'user': 'users',
+#     'checkin': 'checkins',
+#     'photo': 'photos',
+#     'tip': 'tips',
+#     'review': 'reviews',
+# }
 
 
 if __name__ == "__main__":
@@ -135,6 +135,7 @@ if __name__ == "__main__":
         # Get a job and read out the datapath
         current_job = pop_current_job()
         asset = read_job(current_job)['File']
+        tablename = read_job(current_job)['tablename']
         write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
         # Load the data
@@ -142,7 +143,7 @@ if __name__ == "__main__":
         data = load_data(datapath)
 
         # Build query package
-        package = df_to_query(df=data, tablename=get_source_from_name(asset))
+        package = df_to_query(df=data, tablename=table_name)
 
         # Split package
         databunch = build_databunch(query=package, max_size=150)

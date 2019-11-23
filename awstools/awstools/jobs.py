@@ -99,7 +99,7 @@ def read_job(job):
     return response
 
 
-def generate_job(objectpath, job_type, table_name='', dry_run=True, **kwargs):
+def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
     """Generate Job
             Creates json object with necessary naming/format for interapplication
             messaging in the Yelp Dataset Challenge project.
@@ -118,16 +118,17 @@ def generate_job(objectpath, job_type, table_name='', dry_run=True, **kwargs):
     bucket = get_bucket()
     job_data = {
         'file': objectpath,
-        'tablename': table_name,
+        'tablename': tablename,
     }
     if kwargs:
         job_data = dict(job_data, **kwargs) # Append keyword arguments as keys in job
 
-    job_name = ''.join([job_type, '_', savepath.split('/')[-1], '_job.json'])
+    job_name = ''.join([job_type, '_', objectpath.split('/')[-1], '_job.json'])
     temp_job_path = '/tmp/'+job_name
 
     if dry_run:
         print('Dry Run: Saving {} to {}'.format(temp_job_path, job_name))
+        return (temp_job_path, job_name)
     else:
         with open(temp_job_path, 'w') as file:
             json.dump(job_data, file)
