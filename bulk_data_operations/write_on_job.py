@@ -127,6 +127,8 @@ def run_request(bunch, url, retry_size=20):
 # }
 
 
+
+
 if __name__ == "__main__":
     write_logger = logging.getLogger(__name__+' DB-writer')
 
@@ -134,7 +136,7 @@ if __name__ == "__main__":
     for i in range(num_jobs):
         # Get a job and read out the datapath
         current_job = pop_current_job()
-        asset = read_job(current_job)['File']
+        asset = read_job(current_job)['file']
         tablename = read_job(current_job)['tablename']
         write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
