@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import requests
+import ujson
 import ast
 from collections import Counter
 from .models import DB, reviews
@@ -16,14 +18,15 @@ def wc_count(docs):
 
 
 def timeseries(bus_id):
+    # Deprecated - See db_api get request functionality
+    # result = reviews.query.with_entities(reviews.tokens, reviews.date, \
+    #          reviews.star_review).filter_by(business_id=bus_id)
+    # df = pd.read_sql(sql = result.statement, con = DB.engine)
+    # df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
+    #     str.split(', ')
+    # filtered = df.sort_values('date')
 
-    result = reviews.query.with_entities(reviews.tokens, reviews.date, \
-             reviews.star_review).filter_by(business_id=bus_id)
-    df = pd.read_sql(sql = result.statement, con = DB.engine)
-    df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
-        str.split(', ')
-    filtered = df.sort_values('date')
-    filtered = filtered.reset_index()
+    filtered = get_reviews(business_id=bus_id).reset_index()
     filtered['bins'] = pd.qcut(filtered.index, q=10, precision=0)
     new_df = filtered.groupby('bins').agg({'tokens': 'sum', \
             'star_review': 'mean', 'date': lambda x: x.iloc[-1]})
@@ -57,7 +60,7 @@ def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/ap
     }
     response = requests.get(url=url, json=package)
     return strip_tokens_badchar(
-        pd.DataFrame(json.loads(response.text)['data'], columns=['date', 'tokens', 'star_review'])
+        pd.DataFrame(ujson.loads(response.text)['data'], columns=['date', 'tokens', 'star_review'])
     )
 
 # Custom Cleaning function for current token information.

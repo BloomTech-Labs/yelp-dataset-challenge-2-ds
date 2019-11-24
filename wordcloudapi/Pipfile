@@ -15,6 +15,7 @@ Flask-SQLAlchemy = "*"
 Flask = "*"
 Flask-Cors = "*"
 gunicorn = "*"
+ujson = "*"
 
 [requires]
 python_version = "3.7"
