@@ -128,7 +128,7 @@ def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
 
     if dry_run:
         print('Dry Run: Saving {} to {}'.format(temp_job_path, job_name))
-        return (temp_job_path, job_name)
+        return (temp_job_path, job_name, job_data)
     else:
         with open(temp_job_path, 'w') as file:
             json.dump(job_data, file)
