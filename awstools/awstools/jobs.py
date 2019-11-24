@@ -99,7 +99,7 @@ def read_job(job):
     return response
 
 
-def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
+def generate_job(objectpath, job_type, tablename='', dry_run=True, verbose=True, **kwargs):
     """Generate Job
             Creates json object with necessary naming/format for interapplication
             messaging in the Yelp Dataset Challenge project.
@@ -127,7 +127,8 @@ def generate_job(objectpath, job_type, tablename='', dry_run=True, **kwargs):
     temp_job_path = '/tmp/'+job_name
 
     if dry_run:
-        print('Dry Run: Saving {} to {}'.format(temp_job_path, job_name))
+        if verbose:
+            print('Dry Run: Saving {} to {}'.format(temp_job_path, job_name))
         return (temp_job_path, job_name, job_data)
     else:
         with open(temp_job_path, 'w') as file:
