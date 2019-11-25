@@ -44,3 +44,27 @@ def timeseries(bus_id):
               .to_json()).replace("'", "")
 
     return output
+
+
+def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
+    """Create JSON request object and send GET request to database api
+    """
+    package = {
+    'schema': 'biz_words',
+    'params': {
+        'business_id': business_id
+        },
+    }
+    response = requests.get(url=url, json=package)
+    return strip_tokens_badchar(
+        pd.DataFrame(json.loads(response.text)['data'], columns=['date', 'tokens', 'star_review'])
+    )
+
+# Custom Cleaning function for current token information.
+# Remove for performance gain in future data release
+def strip_tokens_badchar(dataframe):
+    # Clean string with simple regex
+    dataframe['tokens'] = dataframe['tokens'].str.strip('\{').str.strip('\}').\
+        str.split(',')
+
+    return dataframe
