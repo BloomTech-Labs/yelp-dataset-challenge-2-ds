@@ -8,6 +8,7 @@ import os
 import s3
 import tracemalloc
 import unittest
+import warnings
 
 ###############
 ### s3 Tests###
@@ -21,6 +22,7 @@ class TestS3(unittest.TestCase):
 
     def setUp(self):
         # Initialize bucket
+        warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed.*<ssl.SSLSocket.*>")
         self.bucket = s3.Bucket('yelp-data-shared-labs18')
 
     def test_bucket_creation(self):
