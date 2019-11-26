@@ -40,16 +40,17 @@ def timeseries(bus_id):
     # Get word counts
     counts = list(map(wc_count, new_df.to_numpy()))
 
-    # Generate output <- This is causing the problem.  The dates end up out of order for some reason
-    df_final = pd.concat(counts)
-    df_final['date'] = df_final['date'].astype(str)
-    df_final = df_final.reset_index()
-    output = (df_final.groupby(['date'], as_index=True)
-             .apply(lambda x: x[['word','count','pct_total','rank',\
-                 'star_review']].to_dict('r'))
-              .to_json()).replace("'", "")
+    # Generate Ouput BETA
+    output = list(map(lambda x: {x.date[0]:x.reset_index().to_dict('r')}, counts))
 
-    return output
+    # Generate output <- This is causing the problem.  The dates end up out of order for some reason
+#     df_final = pd.concat(counts).reset_index()
+#     output = (df_final.groupby(['date'], as_index=True)
+#              .apply(lambda x: x[['word','count','pct_total','rank',\
+#                  'star_review']].to_dict('r'))
+#               .to_json()).replace("'", "")
+
+    return ujson.dumps(output)
 
 
 def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
