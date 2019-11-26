@@ -2,18 +2,23 @@ import numpy as np
 import pandas as pd
 import requests
 import ujson
-import ast
-from collections import Counter
-from .models import DB, reviews
+# import ast
+# from collections import Counter
+# from .models import DB, reviews
 
-def wc_count(docs):
+def wc_count(agg_row):
     """Count the occurance of each word and rank
     """
+    docs = agg_row[0]
+    date = agg_row[1]
+    star_review = agg_row[2]
     total=len(docs)
-    wc = pd.DataFrame({'word':docs, 'count':np.ones(len(docs))})
+    wc = pd.DataFrame({'word':docs, 'count':np.ones(total)})
     wc = wc.groupby('word').sum()
     wc['pct_total'] = wc['count']/total
     wc['rank'] = wc['count'].rank(method='first', ascending=False)
+    wc['date'] = date
+    wc['star_review'] = star_review
     return wc.sort_values(by='rank').nlargest(30, 'count')
 
 
@@ -26,18 +31,18 @@ def timeseries(bus_id):
     #     str.split(', ')
     # filtered = df.sort_values('date')
 
-    filtered = get_reviews(business_id=bus_id).reset_index()
+    # Send API request and process response to DataFrame
+    filtered = get_reviews(business_id=bus_id)
+
+    # Group processed response
     filtered['bins'] = pd.qcut(filtered.index, q=10, precision=0)
     new_df = filtered.groupby('bins').agg({'tokens': 'sum', \
             'star_review': 'mean', 'date': lambda x: x.iloc[-1]})
 
-    counts = []
-    for i in range(len(new_df)):
-        wc_df = wc_count(new_df['tokens'].values[i])
-        wc_df['date'] = new_df['date'].values[i]
-        wc_df['star_review'] = new_df['star_review'].values[i]
-        counts.append(wc_df)
+    # Get word counts
+    counts = list(map(wc_count, new_df.to_numpy()))
 
+    # Generate output <- This is causing the problem.  The dates end up out of order for some reason
     df_final = pd.concat(counts)
     df_final['date'] = df_final['date'].astype(str)
     df_final = df_final.reset_index()
@@ -46,7 +51,7 @@ def timeseries(bus_id):
                  'star_review']].to_dict('r'))
               .to_json()).replace("'", "")
 
-    return output
+    return counts
 
 
 def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
