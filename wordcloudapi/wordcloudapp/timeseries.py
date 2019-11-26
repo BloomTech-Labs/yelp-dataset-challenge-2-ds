@@ -21,15 +21,7 @@ def wc_count(agg_row):
 
 
 def timeseries(bus_id):
-    # Deprecated - See db_api get request functionality
-    # result = reviews.query.with_entities(reviews.tokens, reviews.date, \
-    #          reviews.star_review).filter_by(business_id=bus_id)
-    # df = pd.read_sql(sql = result.statement, con = DB.engine)
-    # df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
-    #     str.split(', ')
-    # filtered = df.sort_values('date')
-
-    # Send API request and process response to DataFrame
+    # Request data from API
     filtered = get_reviews(business_id=bus_id)
 
     # Group processed response
@@ -42,14 +34,6 @@ def timeseries(bus_id):
 
     # Generate Ouput BETA
     output = list(map(lambda x: {x.date[0]:x.reset_index().to_dict('r')}, counts))
-
-    # Generate output <- This is causing the problem.  The dates end up out of order for some reason
-#     df_final = pd.concat(counts).reset_index()
-#     output = (df_final.groupby(['date'], as_index=True)
-#              .apply(lambda x: x[['word','count','pct_total','rank',\
-#                  'star_review']].to_dict('r'))
-#               .to_json()).replace("'", "")
-
     return ujson.dumps(output)
 
 
