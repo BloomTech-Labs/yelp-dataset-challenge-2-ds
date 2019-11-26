@@ -2,9 +2,6 @@ import numpy as np
 import pandas as pd
 import requests
 import ujson
-# import ast
-# from collections import Counter
-# from .models import DB, reviews
 
 def wc_count(agg_row):
     """Count the occurance of each word and rank
