@@ -10,15 +10,13 @@ def wc_count(agg_row):
     """Count the occurance of each word and rank
     """
     docs = agg_row[0]
-    date = agg_row[1]
-    star_review = agg_row[2]
     total=len(docs)
     wc = pd.DataFrame({'word':docs, 'count':np.ones(total)})
     wc = wc.groupby('word').sum()
     wc['pct_total'] = wc['count']/total
     wc['rank'] = wc['count'].rank(method='first', ascending=False)
-    wc['date'] = date
-    wc['star_review'] = star_review
+    wc['date'] = agg_row[1]
+    wc['star_review'] = agg_row[2]
     return wc.sort_values(by='rank').nlargest(30, 'count')
 
 
@@ -51,7 +49,7 @@ def timeseries(bus_id):
                  'star_review']].to_dict('r'))
               .to_json()).replace("'", "")
 
-    return counts
+    return output
 
 
 def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
