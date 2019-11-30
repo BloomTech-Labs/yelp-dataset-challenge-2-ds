@@ -26,7 +26,7 @@ Testing is currently a top to bottom python script tests.py and tests expected u
 
 ### Running the test script
 
-> Navigate to app.py directory and start flask server with: python app.py
+> Navigate to ...
 > Run test scripts with: python tests.py
 
 ## Notes

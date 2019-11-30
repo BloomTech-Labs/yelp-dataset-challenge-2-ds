@@ -106,6 +106,7 @@ venv.bak/
 # AWS stuff
 *.aws
 *.data
+*.yelp
 
 # Dask stuff
 *dask-worker-space
