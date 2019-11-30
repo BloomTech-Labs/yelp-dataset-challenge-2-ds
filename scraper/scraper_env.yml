@@ -24,6 +24,6 @@ dependencies:
     - httplib2==0.14.0
     - oauth2==1.9.0.post1
     - six==1.13.0
-    - yelp==1.0.2
+    - yelpapi
 prefix: /home/vbrandon/anaconda3/envs/yscrape
 
