@@ -115,7 +115,7 @@ class Review(Base):
 class ReviewSentiment(Base):
     __tablename__ = 'review_sentiment'
 
-    id = Column(Integer, primary_key=True)
+    rs_id = Column(Integer, primary_key=True)
     review_id = Column(String, ForeignKey('reviews.review_id'))
     polarity = Column(Float)
     subjectivity = Column(Float)
@@ -124,7 +124,7 @@ class ReviewSentiment(Base):
 class TipSentiment(Base):
     __tablename__ = 'tip_sentiment'
 
-    id = Column(Integer, primary_key=True)
+    ts_id = Column(Integer, primary_key=True)
     tip_id = Column(String, ForeignKey('tips.tip_id'))
     polarity = Column(Float)
     subjectivity = Column(Float)
