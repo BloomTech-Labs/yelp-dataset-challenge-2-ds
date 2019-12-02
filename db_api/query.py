@@ -99,19 +99,11 @@ def query_database(method, query):
     query_logger.info("Query Received.  Method: {}  DataType: {}".format(method, type(query)))
     query_logger.debug(query)
 
-    # num_splits = 2  # multi-threaded session operation
-    # Check query data size.  If small enough, this number of splits may cause pool issues.
-    # if len(query['data']) < num_splits:
-    #     num_splits = len(query['data'])
-
     if method == 'GET':
         query = Get(query=query)
         return query.response
     elif method == 'POST':
         run_post(query=query)  # Single-threaded operation
-        # databunch = build_databunch(query=query, num_splits=num_splits) # Split data
-        # p = Pool(len(databunch))
-        # p.map(run_post, databunch)
 
     return {'message': 'POST received and executed'}
 
@@ -167,6 +159,8 @@ def assign_maker(schema):
         'photos': make_or_update_photo,
         'tips': make_or_update_tip,
         'reviews': make_or_update_review,
+        'review_sentiment': make_or_update_review_sentiment,
+        'tip_sentiment': make_or_update_tip_sentiment,
         'biz_words': biz_words,
     }
     return makers[schema]
@@ -231,6 +225,25 @@ def make_or_update_review(session, record, *args, **kwargs):
     else:
         session.query(Review).filter_by(review_id=record['review_id']).update(record)
 
+
+def make_or_update_review_sentiment(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(ReviewSentiment).filter_by(review_id=record['review_id']).scalar() is not None
+    if not exists:
+        query_logger.debug('review_id did not return existing row. Creating new business instance')
+        session.add(ReviewSentiment(**record))
+    else:
+        session.query(ReviewSentiment).filter_by(review_id=record['review_id']).update(record)
+
+
+def make_or_update_tip_sentiment(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    exists = session.query(TipSentiment).filter_by(tip_id=record['tip_id']).scalar() is not None
+    if not exists:
+        query_logger.debug('tip_id did not return existing row. Creating new business instance')
+        session.add(TipSentiment(**record))
+    else:
+        session.query(TipSentiment).filter_by(tip_id=record['tip_id']).update(record)
 
 # GET ENDPOINT FUNCTIONS #
 # ------------------------

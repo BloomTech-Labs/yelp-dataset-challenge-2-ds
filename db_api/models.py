@@ -110,3 +110,19 @@ class Review(Base):
     lemma = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
     user_id = Column(String, ForeignKey('users.user_id'))
+
+
+class ReviewSentiment(Base):
+    __tablename__ = 'review_sentiment'
+
+    review_id = Column(String, primary_key=True, ForeignKey('reviews.review_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
+
+
+class TipSentiment(Base):
+    __tablename__ = 'tip_sentiment'
+
+    tip_id = Column(String, primary_key=True, ForeignKey('tips.tip_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
