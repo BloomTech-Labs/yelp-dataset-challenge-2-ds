@@ -7,16 +7,10 @@ Yelp Scraper Part 1
 from yelpapi import YelpAPI
 from decouple import config
 import os
+from db import get_db, get_session
 
+from app_global import g
 
-class g():
-    """g, Global Class
-            Used to store repeatedly accessed information in the scraper module
-    """
-    def __init__(self, client=None):
-        self.client=client
-
-g = g()
 
 #########################
 ### Environment Setup ###
@@ -48,6 +42,7 @@ def load_environment(from_file=False):
         print('Environment Loading Without Credential File Not Currently Supported.  See read_credentials.')
         raise NotImplementedError
 
+
 ##############################
 ### Yelp Control Functions ###
 ##############################
@@ -59,8 +54,14 @@ def get_client(**kwargs):
         return g.client
     return g.client
 
-# yelp_api = YelpAPI(api_key)
 
+#####################
+### Data Handling ###
+#####################
+
+def impute_missing(y: np.ndarray, coordinates: tuple):
+    """Query nearby data and build localized dataframe to impute y"""
+    pass
 
 
 if __name__ == "__main__":
