@@ -5,6 +5,7 @@ from flask_caching import Cache
 from decouple import config
 from markdown2 import Markdown
 import os
+import sys
 
 # Custom errors
 from errors import InvalidUsage
@@ -15,6 +16,10 @@ import logging
 ###########
 ###Setup###
 ###########
+# Local Environment Testing Only.
+#   Un-comment to build enviorment script in instance folder.
+# from instance import setup
+# setup.setup_env()
 
 # Set database name
 local_db_name = 'test.sqlite3'  # Change this or override with config.py file in instance/
@@ -31,7 +36,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     # If environment vairables not set, will default to development expected paths and names
     app.config.from_mapping(
-        DEBUG=config('DEBUG', default=True),  # Make sure to change debug to False in production env
+        DEBUG=config('DEBUG', default=False),  # Make sure to change debug to False in production env
         SECRET_KEY=config('SECRET_KEY', default='dev'),  # CHANGE THIS!!!!
         DATABASE_URI=config('DATABASE_URI', 'sqlite:///' + os.path.join(os.getcwd(), local_db_name)),  # For in-memory db: default='sqlite:///:memory:'),
         LOGFILE=config('LOGFILE', os.path.join(app.instance_path, 'logs/debug.log')),
@@ -47,6 +52,9 @@ def create_app(test_config=None):
     import db
     db.init_app(app)
 
+    #  Bring in query methods
+    import query
+
     ############
     ###Routes###
     ############
@@ -58,33 +66,40 @@ def create_app(test_config=None):
             return render_markdown('README.md')
         return "README.md Not Found.  This is API Main.  Use */api/predict/"
 
-    @app.route('/api/query/', methods=['GET'])
-    @cache.cached(timeout=10)  # Agressive cache timeout.
-    def query():
-        # Set Defaults
-        defaults = None
+    @app.route('/api/data', methods=['GET', 'POST'])
+    # @cache.cached(timeout=10)  # Agressive cache timeout.  DEBUG remove caching to see about repear requests
+    def data():
         # Parse request
+        app_logger.info('Data request received.  Processing.')
         if request.method == 'GET':
-            if not 'search' in request.args:
+            if not request.json:
                 raise InvalidUsage(message="Search query not provided")
-
-        # Check for hard-coded defaults.  Suggest loading defaults via function/env
-        #   to activate/deactivate static response testing.
-        if defaults is not None:
-            search_request = defaults
+            # Pass json portion of request to database query handler
+            search_request = request.json
+            search_response = query.query_database(method='GET', query=search_request)
+        elif request.method == 'POST':
+            if not request.json:
+                raise InvalidUsage(message="Post JSON data not provided")
+            # Pass json portion of request to database query handler
+            app_logger.info('POST Request recognized.  Sending to query handler.')
+            search_request = request.json
+            search_response = query.query_database(method='POST', query=search_request)
         else:
-            search_request = request.args['search']
-        # Send search request to query generator, db handler
-        query = NotImplemented
+            raise InvalidUsage(message="Incorrect request type")
 
-        return NotImplemented
+        return search_response
 
     #############
     ###Logging###
     #############
     # Change logging.INFO to logging.DEBUG to get full logs.  Will be a crapload of information.
-    logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)
+    # May significantly impair performance if writing logfile to disk (or network drive).
+    # To enable different services, see README.md
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    # logging.basicConfig(filename=app.config['LOGFILE'], level=logging.INFO)  # File logging
     logging.getLogger('flask_cors').level = logging.INFO
+    app_logger = logging.getLogger(__name__)
 
     ############################
     ###Register Error Handles###
@@ -96,6 +111,7 @@ def create_app(test_config=None):
         return response
 
     return app
+
 
 def render_markdown(filename):
     # Convert markdown file to HTML for rendering

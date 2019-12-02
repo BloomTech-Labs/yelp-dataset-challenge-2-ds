@@ -1,5 +1,7 @@
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
-*__pycache__/
+__pycache__/
 *.py[cod]
 *$py.class
 
@@ -103,15 +105,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# AWS stuff
-*.aws
-*.data
-
-# Dask stuff
-*dask-worker-space
-*.parquet
-*.json
-*.csv
-
-# Model and Information Saves
-*.pkl
+*.pem

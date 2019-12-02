@@ -16,14 +16,18 @@ from sqlalchemy.orm import relationship
 class Business(Base):
     __tablename__ = 'businesses'
 
-    businessid = Column(String, primary_key=True)
+    business_id = Column(String, primary_key=True)
     name = Column(String)
+    address = Column(String)
+    city = Column(String)
+    state = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
-    postalcode = Column(Integer)
-    numreviews = Column(Integer)
+    postal_code = Column(String)
+    review_count = Column(Integer)
     stars = Column(Integer)
-    isopen = Column(Binary)
+    is_open = Column(Integer)
+    hours = Column(String)
     attributes = Column(String)
     categories = Column(String)
 
@@ -31,10 +35,11 @@ class Business(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    userid = Column(String, primary_key=True)
+    user_id = Column(String, primary_key=True)
     name = Column(String)
-    reviewcount = Column(Integer)
-    averagestars = Column(Float)
+    review_count = Column(Integer)
+    average_stars = Column(Float)
+    weight = Column(Float)
     friends = Column(Text)
     yelping_since = Column(DateTime)
     compliment_cool = Column(Integer)
@@ -58,39 +63,68 @@ class User(Base):
 class Checkin(Base):
     __tablename__ = 'checkins'
 
-    checkinid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    checkin_id = Column(String, primary_key=True)
+    dates = Column(Text)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Photo(Base):
     __tablename__ = 'photos'
 
-    photoid = Column(String, primary_key=True)
+    photo_id = Column(String, primary_key=True)
     caption = Column(String)
     label = Column(String)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
+    business_id = Column(String, ForeignKey('businesses.business_id'))
 
 
 class Tip(Base):
     __tablename__ = 'tips'
 
-    tipid = Column(String, primary_key=True)
-    compliments = Column(Integer)
-    datetime = Column(DateTime)
+    tip_id = Column(String, primary_key=True)
+    compliment_count = Column(Integer)
+    date = Column(DateTime)
     text = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    token = Column(Text)
+    token_vector = Column(Text)
+    ngram = Column(Text)
+    noun_chunk = Column(Text)
+    lemma = Column(Text)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
 
 
 class Review(Base):
     __tablename__ = 'reviews'
 
-    reviewid = Column(String, primary_key=True)
-    datetime = Column(DateTime)
+    review_id = Column(String, primary_key=True)
+    date = Column(DateTime)
     cool = Column(Integer)
     funny = Column(Integer)
+    useful = Column(Integer)
     stars = Column(Float)
     text = Column(Text)
-    businessid = Column(String, ForeignKey('businesses.businessid'))
-    userid = Column(String, ForeignKey('users.userid'))
+    token_vector = Column(Text)
+    token = Column(Text)
+    ngram = Column(Text)
+    noun_chunk = Column(Text)
+    lemma = Column(Text)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    user_id = Column(String, ForeignKey('users.user_id'))
+
+
+class ReviewSentiment(Base):
+    __tablename__ = 'review_sentiment'
+
+    rs_id = Column(Integer, primary_key=True)
+    review_id = Column(String, ForeignKey('reviews.review_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
+
+
+class TipSentiment(Base):
+    __tablename__ = 'tip_sentiment'
+
+    ts_id = Column(Integer, primary_key=True)
+    tip_id = Column(String, ForeignKey('tips.tip_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
