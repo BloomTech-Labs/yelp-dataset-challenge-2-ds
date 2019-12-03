@@ -70,10 +70,13 @@ if __name__ == "__main__":
         data = load_data(datapath)
         sentiment_df = add_sentiment(data)
 
+
+        # make sure 
         # Write Data to s3
         savepath = asset.split('/')[-1].split('.')[0] + '_sentiment'
         write_data(data=sentiment_df, savepath=savepath)
-
+        
+        # TODO, MAKE SURE TABLE NAME IS SPECIFIED
         # Generate POST Job
         generate_job(savepath, 'POST')
 
