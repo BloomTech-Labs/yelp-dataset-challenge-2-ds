@@ -95,7 +95,7 @@ def process_df(df):
     df['sentiment'] = df.text.apply(process_text)
     df['polarity'] = df.sentiment.apply(get_polarity)
     df['subjectivity'] = df.sentiment.apply(get_subjectivity)
-    df.filter(['doc', 'tuple', 'sentiment'], axis='columns', inplace=True)
+    df.drop(['doc', 'tuple', 'sentiment'], axis='columns', inplace=True)
 
     stop_main = time.time()
     logger.info('Batch of {} processed in {}'.format(len(df), stop_main-start_main))
