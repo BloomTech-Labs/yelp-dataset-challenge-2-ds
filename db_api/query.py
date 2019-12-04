@@ -150,7 +150,7 @@ def build_databunch(query, num_splits=3):
 ###Make Instance Methods###
 ###########################
 
-# TODO: Collapse into single makre factory that calls proper class
+# TODO: Collapse into single maker factory that calls proper class
 def assign_maker(schema):
     makers = {
         'businesses': make_or_update_business,
