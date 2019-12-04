@@ -3,12 +3,8 @@ import s3
 import NLP_processing
 import pandas as pd
 import json
-import spacy
-import os
-
 import logging
-
-
+import os
 
 ###Logging###
 main_logger = logging.getLogger(__name__+" NLP Controller")
