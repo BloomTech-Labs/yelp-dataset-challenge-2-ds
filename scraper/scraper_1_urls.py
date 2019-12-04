@@ -8,6 +8,7 @@ from yelpapi import YelpAPI
 from decouple import config
 import os
 from db import get_db, get_session
+import numpy as np
 
 from app_global import g
 

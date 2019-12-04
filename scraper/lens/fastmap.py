@@ -15,7 +15,8 @@ import pickle
 
 class ModelMap():
     def __init__(self):
-        self.radius = 1  # TODO calculate on draw
+        self.radius = None  # Not Implemented (part of search_model)
+        self.cache = {}
 
     def __repr__(self):
         return '<ModelMap> {} Cached of {} Available'.format('NA', 'NA')
@@ -33,14 +34,23 @@ class ModelMap():
         file_location = save_model(object_to_save=model, savename=hashed_coord)
         return {
             'geohash': hashed_coord,
-            'radius': self.radius,
             'file_location': file_location,
         }
 
-    def update_model(self, X, y):
+    def predict(self, geohash, **kwargs):
         pass
 
-    def search_models(self, coordinates):
+    def clean_cache(self, threshold):
+        # Remove element from cache if not in use to prevent memory explosion
+        pass
+
+    def update_model(self, X, y):
+        # TODO Update existing model with new X, y (transfer learning)
+        pass
+
+    def search_models(self, coordinates, limit=0.01):
+        # TODO Lookup which model is most appropriate for search
+        # If no model within limit of coordinates, pin new model
         pass
 
 
@@ -85,7 +95,7 @@ def load_model(path_to_file):
 if __name__ == "__main__":
     # Test with n observations of each category.
     # In practice, these will be imputed values or values from nearby locations
-    X=np.array([[0,1,2], [3,4,5], [6,7,8]])
+    X=np.array([[0,1,2], [3,2,5], [6,7,8], [9, 10, 11]])
     y=np.array([0.5,0.65,1])
     description = get_network_description(
         X=X,
