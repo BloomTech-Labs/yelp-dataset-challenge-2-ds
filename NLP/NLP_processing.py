@@ -77,13 +77,6 @@ def get_polarity(tuple):
 def get_subjectivity(tuple):
     return tuple[1]
 
-def add_sentiment(df):
-    df['sentiment'] = df.text.apply(process_text)
-    df['polarity'] = df.sentiment.apply(get_polarity)
-    df['subjectivity'] = df.sentiment.apply(get_subjectivity)
-    df = df.filter(['review_id', 'tip_id', 'polarity', 'subjectivity']) 
-    return df
-
 def process_df(df):
     start_main = time.time()
     df['doc'] = list(nlp.pipe(df.text.to_numpy(), batch_size=100))
