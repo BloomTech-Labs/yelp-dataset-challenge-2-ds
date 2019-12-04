@@ -20,7 +20,6 @@ from jobs import get_jobs, pop_current_job, read_job, \
     download_data, delete_local_file, delete_s3_file, load_data, \
         write_data, generate_job
     
-
 ###Logging###
 log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
@@ -61,7 +60,7 @@ if __name__ == "__main__":
     for i in range(num_jobs):
         # Get a job and read out the datapath
         current_job = pop_current_job()
-        asset = read_job(current_job)['Key']
+        asset = read_job(current_job).get('file')
 
         main_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
@@ -71,11 +70,15 @@ if __name__ == "__main__":
         sentiment_df = add_sentiment(data)
 
         # Write Data to s3
-        savepath = asset.split('/')[-1].split('.')[0] + '_sentiment'
-        write_data(data=sentiment_df, savepath=savepath)
-
+        savepath = asset+'_sentiment'
+        write_data(data=sentiment_df, savepath=savepath, dry_run=False)
+        
         # Generate POST Job
-        generate_job(savepath, 'POST')
+        review = asset.split('_')[1] == 'review'
+        if review:
+            generate_job(savepath, 'POST', tablename='review_sentiment', dry_run=False)
+        else:
+            generate_job(savepath, 'POST', tablename='tip_sentiment', dry_run=False)
 
         # Cleanup
         delete_local_file(datapath)
