@@ -96,6 +96,7 @@ dependencies:
     - jmespath==0.9.4
     - oauth2==1.9.0.post1
     - python-dateutil==2.8.0
+    - python-decouple==3.3
     - requests==2.22.0
     - s3transfer==0.2.1
     - urllib3==1.25.7
