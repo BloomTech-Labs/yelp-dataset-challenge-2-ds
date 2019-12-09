@@ -15,10 +15,22 @@ import logging
 ########################
 
 def filter_unique(raw_frame):
-    # Get existing id's
-    raise NotImplementedError # INCOMLETE
+    ## Check if id existing, if exists: drop, else keep
+    raw_frame['exists'] = raw_frame.business_id.apply(check_exists)
+    
+    return raw_frame.query('exists == False')
+
+def check_exists(x):
+    # Check if business_id already in database
     with get_session() as session:
-        id_list = session.query(Business.business_id).all()
+        exists = session.query(Business.business_id).filter(
+            Business.business_id == x
+        ).scalar()
+        
+    if exists:
+        return True
+    else:
+        return False
 
 
 #####################
