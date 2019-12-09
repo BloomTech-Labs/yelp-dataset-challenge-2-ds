@@ -7,7 +7,6 @@ Yelp Scraper Part 1
 from yelpapi import YelpAPI
 from decouple import config
 import os
-from db import get_db, get_session
 import numpy as np
 import pandas as pd
 
@@ -73,7 +72,7 @@ def clean_business_search(df: pd.DataFrame):
     # Filter and Rename Columns
     temp = df.filter(['id', 'name', 'image_url', 'coordinates', \
                       'review_count', 'is_closed', 'url', 'categories',\
-                      'location'])
+                      'location', 'rating'])
     temp = temp.rename(columns={'id':'business_id', 'rating': 'stars'})
     
     # change is_closed to is_open (flip bool)
@@ -105,7 +104,7 @@ def search(category, latitude, longitude):
     # Get client and run search
     client = get_client()
     search_results = client.search_query(
-        categories=category, latitude=latitude, longitude=longitude
+        categories=category, latitude=latitude, longitude=longitude, limit=50
         )
     df = pd.DataFrame(search_results['businesses'])
     return clean_business_search(df)
