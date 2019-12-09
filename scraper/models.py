@@ -18,6 +18,7 @@ class Business(Base):
 
     business_id = Column(String, primary_key=True)
     name = Column(String)
+    url = Column(String)
     address = Column(String)
     city = Column(String)
     state = Column(String)
@@ -27,9 +28,8 @@ class Business(Base):
     review_count = Column(Integer)
     stars = Column(Integer)
     is_open = Column(Integer)
-    hours = Column(String)
-    attributes = Column(String)
     categories = Column(String)
+    image_url = Column(String)
 
 
 class Review(Base):
