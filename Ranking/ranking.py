@@ -1,177 +1,118 @@
-import pandas as pd
-import numpy as np
-import json
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import NearestNeighbors
+from config import DATABASE_URI # get the database URI from file in gitignore
+from models import * # download models.py from db_api folder
+from db import get_session # download db.py from db_api folder
 
+def biz_words(session, params, *args, **kwargs):
+    response = session.query(Review.date, Review.token, Review.stars).filter(Review.business_id==params['business_id']).order_by(Review.date)
+    return {'data': response.all()}
 
+params = {'business_id' : '1SWheh84yJXfytovILXOAQ'}
 
+with get_session() as session:
+    test = biz_words(session, params)
+    print(test)
 
-def convert_to_json(string):
-    result = json.loads(string)
-    return result
+reviews = test.get('data')
 
-def get_key(attributes, key):
-    result = attributes.get(key)
-    return result
+"""
+Attributes to get for ranking
+Business:
+    review_count = Column(Integer)
+    #TODO populate field with comparison companies
+    stars = Column(Integer) 
+    ##^^ Use stars if review_count doesn't match number 
+    ## of reviews in db
 
-# Times are converted to float hours
-# 9:30am is 9.5
-# 9:30pm is 21.5
-def get_time(time):
-    hour, minutes = time.split(':')
-    hour = int(hour)
-    minutes = float(minutes)/60
-    time = hour+minutes
-    return time
+Review:
+    review_id = Column(String, primary_key=True)
+    stars = Column(Float)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    (maybe)     user_id = Column(String, ForeignKey('users.user_id'))
 
-def get_open_close(hours, day):
-    try:
-        hours = hours.get(day)
-        open_time, close_time = hours.split('-')
+ReviewSentiment:
+    review_id = Column(String, ForeignKey('reviews.review_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
+    TODO how to use subjectivity?
 
-        open_time = get_time(open_time)
-        close_time = get_time(close_time)
+TipSentiment:
+    tip_id = Column(String, ForeignKey('tips.tip_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
 
-    except:
-        open_time = np.NaN
-        close_time = np.NaN
+Formula:
 
-    finally:
-        return (open_time, close_time)
+B_stars = bayesian estimate of stars
+B_review_sentiment = bayesian estimate of sentiment
+B_tip_sentiment = bayesian estimate of tip sentiment
 
+ZB_stars = Z-score of bayesian estimate of stars
+ZB_review_sentiment = Z-score of bayesian estimate of sentiment
+ZB_tip_sentiment = Z-score of bayesian estimate of tip sentiment
 
-def get_open_time(hours_tuple):
-    return hours_tuple[0]
-def get_close_time(hours_tuple):
-    return hours_tuple[1]
+C_STARS = coefficient to weight ZB_stars by
+C_REVIEW_SENTIMENT = coefficient to weight ZB_review_sentiment by
+C_TIP_SENTIMENT = coefficient to weight ZB_tip_sentiment by
 
-def convert_categories_to_list(categories):
-    new_list = []
-    try:
-        for category in categories.split(','):
-            new_list.append(category.strip().replace(' ', '_'))
-    except:
-        pass
-    finally:
-        return new_list
+business_Z_score = ZB_stars(C_STARS) +
+                    ZB_review_sentiment(C_REVIEW_SENTIMENT) +
+                    ZB_tip_sentiment(C_TIP_SENTIMENT)
 
-def create_categories(cat_list, df):
-    for cat in cat_list:
-        df[cat] = 1
+business_percentile = Z_to_percentile(business_Z_score)
 
-def clean_business_data(businesses):
-    # --------- notes----------#
-    # what to do with business_id?
-    # filter by is_open?
-    # TODO convert attributes to numeric
+"""
 
-    #---------- Drop unnecessary columns ----------#
-    # filtering all geographic data other than latitude and longitude
-    # to avoid double weighting location
-    drop_columns = ['address', 'city', 'name', 'postal_code', 'state']
-    businesses.drop(drop_columns, axis = 'columns', inplace=True)
+def create_ranking(business_id):
 
-    #---------- Get attributes columns ----------#
-    # Convert attributes to json
-    businesses.attributes = businesses.attributes.apply(convert_to_json)
-    # Split attributes to seperate columns
-    for key in businesses.attributes.iloc[0]:
-        businesses[key] = businesses.attributes.apply(get_key, args=(key,))
-    businesses.drop(['attributes'], axis='columns', inplace=True)
-
-    #---------- Get open and close times ----------#
-    businesses.hours = businesses.hours.apply(convert_to_json)
-    # Creating and filling columns for open and close times each day
-    days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 
-        'Thursday', 'Friday', 'Saturday']
-    for day in days:
-        businesses['temp_hours_tuple'] = businesses.hours.apply(get_open_close, args=(day,))
-        businesses[day + 'Open'] = businesses['temp_hours_tuple'].apply(get_open_time)
-        businesses[day + 'Close'] = businesses['temp_hours_tuple'].apply(get_close_time)
+    # Coefficients for ranking elements
+    # TODO set weights
+    C_STARS = .5
+    C_REVIEW_SENTIMENT = .35
+    C_TIP_SENTIMENT = .15
     
-    businesses.drop(['temp_hours_tuple', 'hours'], axis='columns', inplace=True)
+    # Getting info from DB
+    business = get_business_data(business_id)
+    comparison = get_comparison(business)
+    ZB_stars = get_ZB_stars(business, comparison)
+    ZB_review_sentiment = get_ZB_review_sentiment(business, comparison)
+    ZB_tip_sentiment = get_ZB_tip_sentiment(business, comparison)
 
-    #---------- Getting category columns ----------#
+    business_Z_score = ((ZB_stars*C_STARS) +
+                    (ZB_review_sentiment*C_REVIEW_SENTIMENT) +
+                    (ZB_tip_sentiment*C_TIP_SENTIMENT))
 
-    categories = []
-    for business in businesses.categories:
-        try:
-            for category in business.split(','):
-                if category.strip().replace(' ', '_') not in categories:
-                    categories.append(category.strip().replace(' ', '_'))
-        except:
-            pass
+    business_percentile = Z_to_percentile(business_Z_score)
+
+    return business_percentile
+
+def biz_query(session, business_id, *args, **kwargs):
+
+    response = session.query(Review.date, Review.token, Review.stars).filter(Review.business_id==business_id).order_by(Review.date)
+    return response.all()
+
+def get_business_data(business_id):
+
+    with get_session() as session:
+        business = biz_query(session, business_id)
     
+    return business
 
-    #---------- Impute missing values ---------#
+def get_comparison(business_id):
+    # should already be a field populated in db with list 
+    # of business_ids for comparison
 
-    #---------- Encoding ----------#
+    pass
 
-    # ordinal = NoiseLevel, RestaurantsAttire(None, casual, dressy, formal)
-    # categories, BusinessAcceptsCreditCards, RestaurantsPriceRange2, BusinessParking,
-    # BikeParking, GoodForKids, RestaruantsTakeOut, RestaurantsGoodForGroups,
-    # OutdoorSeating, RestaurantsDelivery, RestaurantsReservations, WiFi, RestaruantsAttire,
-    # Alcohol, HasTV, Ambiance, byAppointmentOnly, NoiseLevel, Caters, GoodForMeal,
-    # WheelchairAccessible
+def get_ZB_stars(business, comparison):
+    pass
 
+def get_ZB_review_sentiment(business, comparison):
+    pass
 
-    return businesses
+def get_ZB_tip_sentiment(business, comparison):
+    pass
 
-def get_comparison_group(business, businesses):
-    # TODO read business data to df
-    # In database already?
-    scaler = StandardScaler()
-    df_scaled = scaler.fit_transform(businesses)
-    df_scaled = pd.Dataframe(df_scaled, columns = df.columns)
-    
-    neigh = NearestNeighbors(n_neighbors=20)
-    neigh.fit(df_scaled)
-    # business must be in same form as df
-    distances, indices = neigh.kneighbors(business)
-    comps = []
-    for i in range(10):
-        comp_index = indices[0,i]
-        comps.append(df.iloc[comp_index].player)
-    return comps
-
-'''
-Scores:
-
-Stars (adjusted for user history)
-Review Sentiment (weighted by votes?)
-Tip Sentiment
-Number of reviews
-
-TODO Document the formula
-'''
-
-reviews = pd.read_parquet('clean_review_0')
-
-reviews.columns
-# 'review_id', 'user_id', 'business_id', 'stars', 'useful', 'funny',
-# 'cool', 'text', 'date', 'token', 'token_vector', 'lemma'*, 'ngram'*
-review_retoken = pd.read_parquet('clean_review_0_retoken')
-# review_id, token (list), lemma (list)
-review_sentiment = pd.read_parquet('clean_review_0_sentiment')
-# review_id, polarity, subjectivity
-tips = pd.read_parquet('clean_tip_0')
-# user_id, business_id, text, date, compliment_count, tip_id
-tip_sentiment = pd.read_parquet('clean_tip_0_sentiment')
-# tip_id, polarity, subjectivity
-users = pd.read_parquet('clean_user_0')
-# user_id, name, review_count, yelping_since, useful, funny, 
-# cool, elite (list of years), friends, fans, average_stars',
-# compliment_hot, 'compliment_more', 'compliment_profile', 
-# 'compliment_cute', 'compliment_list', 'compliment_note', 
-# 'compliment_plain', 'compliment_cool', 'compliment_funny', 
-# 'compliment_writer', 'compliment_photos'
-with open('clean_transformed_business_0.json') as business_file:
-    businesses = json.load(business_file)
-    businesses = pd.DataFrame(businesses)
-
-
-comp = get_comparison_group(business)
-
+def Z_to_percentile(business_Z_score):
+    pass
 
 
