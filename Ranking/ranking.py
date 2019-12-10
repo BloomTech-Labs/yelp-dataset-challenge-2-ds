@@ -94,7 +94,7 @@ def get_business_data(business_id):
 
     with get_session() as session:
         business = biz_query(session, business_id)
-    
+     
     return business
 
 def get_comparison(business_id):
