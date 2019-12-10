@@ -115,3 +115,6 @@ venv.bak/
 
 # Model and Information Saves
 *.pkl
+
+# DB info
+config.py
