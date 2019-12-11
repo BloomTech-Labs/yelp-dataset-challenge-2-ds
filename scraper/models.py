@@ -63,3 +63,13 @@ class Perceptron(Base):
     geohash = Column(String, primary_key=True)
     radius = Column(Float)
     file_location = Column(String)
+
+
+class SearchResults(Base):
+    __tablename__ = 'search_results'
+
+    search_num = Column(Integer, primary_key=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    category = Column(String)
+    num_unique = Column(Integer)

@@ -80,7 +80,7 @@ def clean_business_search(df: pd.DataFrame):
     temp = temp.drop(columns='is_closed')
     
     # parse location to address, city, state, postal_code
-    temp['address'] = temp.location.apply(lambda x: x['address1']+str(x['address2']))
+    temp['address'] = temp.location.apply(lambda x: str(x['address1'])+str(x['address2']))
     temp['city'] = temp.location.apply(lambda x: x['city'])
     temp['state'] = temp.location.apply(lambda x: x['state'])
     temp['postal_code'] = temp.location.apply(lambda x: x['zip_code'])
@@ -108,11 +108,6 @@ def search(category, latitude, longitude):
         )
     df = pd.DataFrame(search_results['businesses'])
     return clean_business_search(df)
-
-
-def impute_missing(y: np.ndarray, coordinates: tuple):
-    """Query nearby data and build localized dataframe to impute y"""
-    pass
 
 
 if __name__ == "__main__":

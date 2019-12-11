@@ -32,7 +32,8 @@ Not Implemented Yet
 From Wikipedia: https://en.wikipedia.org/wiki/Decimal_degrees
 
 > Minimum Jump: **0.001** Approximately a neighborhood, streed (~111m)
-> Maximum Model Radius: **0.01** Approximately a town or village (~1.11km)
+> Minimum Model Radius: **0.01** Approximately a town or village (~1.11km)
+> Maximum Model Radius: **0.05** Half a city or district (~5.55km)
 
 ### Logging
 

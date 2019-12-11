@@ -18,7 +18,7 @@ def filter_unique(raw_frame):
     ## Check if id existing, if exists: drop, else keep
     raw_frame['exists'] = raw_frame.business_id.apply(check_exists)
     
-    return raw_frame.query('exists == False')
+    return raw_frame.query('exists == False').drop(columns='exists')
 
 def check_exists(x):
     # Check if business_id already in database
@@ -42,6 +42,11 @@ def write_business_search(unique_frame):
     with get_session() as session:
         for record in unique_frame.to_dict(orient='r'):
             session.add(Business(**record))
-        
+            session.commit()
+
+
+def write_search_metadata(**kwargs):
+    with get_session() as session:
+        session.add(SearchResults(**kwargs['record']))
         session.commit()
-        session.close()
+        
