@@ -1,3 +1,6 @@
+# Imports for function
+
+import pandas as pd
 import collections, functools, operator
 import numpy as np
 import operator
