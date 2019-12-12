@@ -228,7 +228,12 @@ def make_or_update_review(session, record, *args, **kwargs):
 
 def make_or_update_review_sentiment(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(ReviewSentiment).filter_by(review_id=record['review_id']).scalar() is not None
+    try:
+        exists = session.query(ReviewSentiment).filter_by(review_id=record['review_id']).scalar() is not None
+    except:
+        query_logger.info('Error in .scalar(). Multiple Found?.  Exception in alchemy ret one()')
+        query_logger.info('')
+        exists = False
     if not exists:
         query_logger.debug('review_id did not return existing row. Creating new business instance')
         session.add(ReviewSentiment(**record))
@@ -238,7 +243,11 @@ def make_or_update_review_sentiment(session, record, *args, **kwargs):
 
 def make_or_update_tip_sentiment(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
-    exists = session.query(TipSentiment).filter_by(tip_id=record['tip_id']).scalar() is not None
+    try:
+        exists = session.query(TipSentiment).filter_by(tip_id=record['tip_id']).scalar() is not None
+    except:
+        query_logger.info('Error in .scalar(). Multiple Found?. Exception in alchemy ret one()')
+        exists = False
     if not exists:
         query_logger.debug('tip_id did not return existing row. Creating new business instance')
         session.add(TipSentiment(**record))
