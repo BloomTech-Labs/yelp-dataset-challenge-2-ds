@@ -6,8 +6,10 @@ Master control module for yelp scraper
 
 import logging
 import os
+import numpy as np
 from scraper_1_urls import search
 from write_query import (filter_unique, write_business_search, write_search_metadata)
+
 
 ###############
 ### Logging ###
@@ -25,26 +27,19 @@ scraper_logger = logging.getLogger(__name__)
 class Scraper():
     def __init__(self, start_coord, radius, category):
         self.coordinates = start_coord
-        self.radius = radius
+        self.max_radius = radius
         self.category = category
-        self.path = self.generate_path(start_coord, radius)
-
-    def generate_path(self, coordinates, radius):
-        # Create a contiguous path that covers area given by radius.
-        pass
+        # Formula terms
+        self.coord_polar = {'r':0, 'theta':0, 'a':calc_a_max(radius)}
 
     def run(self):
         # Loop through hops until the end of path is reached
         pass
 
-    def get_hop(self, max=0.01):
-        # Iterate through lens forward passes until sum(fastmap(hopsize, [coord])) predicts
-        #   Approaches limit or max hop
-        
-        # Dummpy hop (default max) <- FIX WILL MOVE IN STRAIGHT LINE
-        new_lat = self.coordinates(0) + max
-        new_long = self.coordinates(1) + max
-        self.coordinates = (new_lat, new_long)
+    def move(self, d_theta=np.pi/12):
+        # Calculate expected value for d_theta and adjust curvature
+        def delta_a(a, c, expected_value):
+            return c * a * (50-expected_value)/expected_value
 
     def search(self):
         results = search(
@@ -57,9 +52,6 @@ class Scraper():
             unique_results=unique_results,
         )
         self.move()
-
-    def move(self):
-        pass
 
     def save_search(self, unique_results):
         # Save new businesses
@@ -94,7 +86,21 @@ def create_scraper(city, radius, category, coordinates = None):
 ### Helper Functions ###
 ########################
 
-def get_coordinates(city):
+def calc_a_max(max_radius):
+    a_max = [np.log(max_radius) / theta for theta in np.linspace(0.001, 2*np.pi, 12)]
+    a_max = min(a_max)/10
+    return a_max
+
+def get_decimal_from_polar(center_coord, r, theta, a):
+    def get_offset(theta, a):
+        r = np.exp(-a*theta)
+        lat = r * np.sin(theta)
+        lon = r * np.cos(theta)
+        return(lat,lon)
+    offset = get_offset(theta, a)
+    return (center_coord[0]+offset[0], center_coord[1]+offset[1])
+
+def lookup_city_coordinates(city):
     # INCOMPLETE
     # TODO city lookup
     return (0,0)
