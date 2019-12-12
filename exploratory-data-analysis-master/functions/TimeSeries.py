@@ -3,8 +3,10 @@
 from collections import Counter
 import pandas as pd
 import numpy as np
+import ast
 import datetime as datetime
 
+# This function will let us use timeseries in our features
 def timeseries(bus_id):
 
     result = reviews.query.filter_by(business_id=bus_id)
