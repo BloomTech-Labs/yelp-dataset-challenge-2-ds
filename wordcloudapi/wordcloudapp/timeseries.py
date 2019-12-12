@@ -36,7 +36,7 @@ def timeseries(bus_id):
         package = {date: group.drop(columns='date').to_dict('r')}
         output.append(package)
 
-    return output
+    return ujson.dumps(output)
 
 
 def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):
