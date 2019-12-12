@@ -26,9 +26,9 @@ def filtered_data(business_id):
 def get_row_from_id(business_id):
     pass
 
-def get_comparison_group(business_id, businesses):
-    # TODO read business data to df
-    # In database already?
+def get_comparison_group(business_id):
+    businesses = filtered_data(business_id)
+    # TODO impute missing values in businesses?
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(businesses)
     df_scaled = pd.DataFrame(df_scaled, columns = df.columns)
@@ -45,10 +45,11 @@ def get_comparison_group(business_id, businesses):
     return comps
 
 def add_comparisons(df):
-    df['comparisons'] = df.
+    df['comparisons'] = df.business_id.apply(get_comparison_group)
+    pass
 
 
-
+### TODO Change to read all business_ids from DB, not jobs/S3 ###
 if __name__ == "__main__":
 
     main_logger = logging.getLogger(__name__+" Comparisons Adder")
