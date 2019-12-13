@@ -36,10 +36,12 @@ class Scraper():
         # Loop through hops until the end of path is reached
         pass
 
-    def move(self, d_theta=np.pi/12):
+    def move(self, d_theta=np.pi/12, c=XXX):
         # Calculate expected value for d_theta and adjust curvature
         def delta_a(a, c, expected_value):
             return c * a * (50-expected_value)/expected_value
+        
+        a = a + delta_a(a, c, expected_value)
 
     def search(self):
         results = search(
@@ -70,7 +72,7 @@ def create_scraper(city, radius, category, coordinates = None):
     # Create scraper and its Lens
     # TODO Initiate lens modelmap (need to draw map)
     if city is not None:
-        coordinates = get_coordinates(city)
+        coordinates = lookup_city_coordinates(city)
     elif coordinates is None:
         scraper_logger.error('City or Coordinates invalid')
         raise ValueError('City and coordinates not provided')
