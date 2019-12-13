@@ -244,9 +244,10 @@ def tvf_viz2(filename):
         prefix='processed',
         rootname='viz2',
         path='Processed/',
+        filetype='json'
         )
     for path in savepaths:
-        generate_job(objectpath=path, tablename='viz2', job_type='POST')
+        generate_job(objectpath=path, tablename='viz2', job_type='POST', dry_run=False)
 
 
 table_transformers = {
