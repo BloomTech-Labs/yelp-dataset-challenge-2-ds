@@ -12,8 +12,10 @@ def wc_count(agg_row):
     wc = wc.groupby('word').sum()
     wc['pct_total'] = wc['count']/total
     wc['rank'] = wc['count'].rank(method='first', ascending=False)
-    wc['date'] = agg_row[1]
-    wc['star_review'] = agg_row[2]
+    wc['date'] = agg_row[2]
+    wc['star_review'] = agg_row[1]
+    wc['word'] = wc.index
+    print(wc)
     return wc.sort_values(by='rank').nlargest(30, 'count')
 
 
@@ -29,9 +31,14 @@ def timeseries(bus_id):
     # Get word counts
     counts = list(map(wc_count, new_df.to_numpy()))
 
-    # Generate Ouput BETA
-    output = list(map(lambda x: {x.date[0]:x.reset_index().to_dict('r')}, counts))
-    return ujson.dumps(output)
+    # Generate Output BETA 2
+    output = {}
+    for group in counts:
+        date = group.date[0]
+        package = group.drop(columns='date').to_dict('r')
+        output[date] = package
+
+    return output
 
 
 def get_reviews(business_id, url='https://db-api-yelp18-staging.herokuapp.com/api/data'):

@@ -148,7 +148,7 @@ if __name__ == "__main__":
         package = df_to_query(df=data, tablename=tablename)
 
         # Split package
-        databunch = build_databunch(query=package, max_size=150)
+        databunch = build_databunch(query=package, max_size=50)
 
         # Connect and write to database via api
         parallel_post_requests(
