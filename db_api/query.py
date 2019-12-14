@@ -258,6 +258,9 @@ def make_or_update_tip_sentiment(session, record, *args, **kwargs):
 
 def make_or_update_viz2(session, record, *args, **kwargs):
     # Check if existing to UPDATE or INSERT
+    for key in record.keys():
+        if type(record[key]) == dict:
+            record[key] = str(record[key])
     try:
         exists = session.query(Viz2).filter_by(business_id=record['business_id']).scalar() is not None
     except:
