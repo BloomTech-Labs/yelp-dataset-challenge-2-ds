@@ -161,6 +161,7 @@ def assign_maker(schema):
         'reviews': make_or_update_review,
         'review_sentiment': make_or_update_review_sentiment,
         'tip_sentiment': make_or_update_tip_sentiment,
+        'viz2': make_or_update_viz2,
         'biz_words': biz_words,
     }
     return makers[schema]
@@ -253,6 +254,21 @@ def make_or_update_tip_sentiment(session, record, *args, **kwargs):
         session.add(TipSentiment(**record))
     else:
         session.query(TipSentiment).filter_by(tip_id=record['tip_id']).update(record)
+
+
+def make_or_update_viz2(session, record, *args, **kwargs):
+    # Check if existing to UPDATE or INSERT
+    try:
+        exists = session.query(Viz2).filter_by(business_id=record['business_id']).scalar() is not None
+    except:
+        query_logger.info('Error in .scalar(). Multiple Found?. Exception in alchemy ret one()')
+        exists = False
+    if not exists:
+        query_logger.debug('business_id did not return existing row. Creating new viz2 instance')
+        session.add(Viz2(**record))
+    else:
+        session.query(Viz2).filter_by(business_id=record['business_id']).update(record)
+
 
 # GET ENDPOINT FUNCTIONS #
 # ------------------------
