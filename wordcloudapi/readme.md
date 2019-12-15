@@ -10,7 +10,7 @@ Endpoint for word cloud animation (NOTE: accepts only POST method):
 
 Frontend: [Yelp Insights](https://yelpinsights.com/)
 
-Request format: {'business_id': '4JNXUYY8wbaaDmk3BPzlWw'}
+Request format: {"business_id": "4JNXUYY8wbaaDmk3BPzlWw"}
 
 ## Dashboard visualizations
 
@@ -20,4 +20,4 @@ Endpoint for dashboard visualizations (NOTE: accepts only POST method):
 
 Frontend: [Yelp Insights](https://yelpinsights.com/)
 
-Request format: {'business_id': '4JNXUYY8wbaaDmk3BPzlWw'}
+Request format: {"business_id": "4JNXUYY8wbaaDmk3BPzlWw"}
