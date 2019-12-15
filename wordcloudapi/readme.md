@@ -1,6 +1,6 @@
 # Wordcloud API
 
-Flask API to serve front-end visualizations
+Flask API to serve front-end data visualizations
 
 ## Word Cloud Animation
 
