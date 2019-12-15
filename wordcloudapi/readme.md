@@ -10,6 +10,6 @@ Frontend: [Yelp Insights](https://yelpinsights.com/)
 
 ### Dashboard visualizations
 
-Endpoint for word cloud animation (NOTE: accepts only POST method): 
+Endpoint for dashboard visualizations (NOTE: accepts only POST method): 
 [https://wordcloudapp.herokuapp.com/dashboard](https://wordcloudapp.herokuapp.com/dashboard)
 Frontend: [Yelp Insights](https://yelpinsights.com/)
