@@ -4,10 +4,12 @@ Flask API to serve front-end visualizations
 
 ## Word Cloud Animation
 
-Endpoint for word cloud animation: [https://wordcloudapp.herokuapp.com/api](https://wordcloudapp.herokuapp.com/api)
+Endpoint for word cloud animation (NOTE: accepts only POST method): 
+[https://wordcloudapp.herokuapp.com/api](https://wordcloudapp.herokuapp.com/api)
 Frontend: [Yelp Insights](https://yelpinsights.com/)
 
 ### Dashboard visualizations
 
-Endpoint for word cloud animation: [https://wordcloudapp.herokuapp.com/dashboard](https://wordcloudapp.herokuapp.com/dashboard)
+Endpoint for word cloud animation (NOTE: accepts only POST method): 
+[https://wordcloudapp.herokuapp.com/dashboard](https://wordcloudapp.herokuapp.com/dashboard)
 Frontend: [Yelp Insights](https://yelpinsights.com/)
