@@ -26,10 +26,11 @@ class Bucket():
         """
         self.bucket_name = bucket_name
         self.setup_env(config_type)
-        self.contents = self.dir(all=True)
+        print('Preparing shortlist')
+        self.shortlist = self.dir(all=False) # Returns first 1000 keys
 
     def __repr__(self):
-        return 'AWS S3 Bucket <{}>'.format(self.bucket_name)
+        return 'AWS S3 Bucket <{}> \n {}'.format(self.bucket_name, self.shortlist)
 
     def setup_env(self, config_type):
         try:
@@ -53,13 +54,23 @@ class Bucket():
     def delete(self, object_name):
         delete_object(bucket_name=self.bucket_name, object_name=object_name)
 
-    def dir(self, all=False):
-        if all:
+    def dir(self, all=False, prefix=''):
+        """Get keys from s3 bucket.
+
+        :param all: First 1000 or all results (may be slow)
+        :type all: bool True/False
+        :param prefix: Filter for the beginning of object keys.  Processed by Amazon.
+        :type prefix: string
+        """
+        pages = get_s3_objects(self.bucket_name, prefix=prefix)
+        self.contents_ = pages
+        if not all:
+            keys = get_s3_keys(next(pages))
+        elif all:
             keys = []
-            for key in get_bucket_keys(self.bucket_name):
-                keys.append(key)
-            return keys
-        return get_bucket_keys(self.bucket_name)
+            for page in pages:
+                keys.append(get_s3_keys(page))
+        return keys
 
     def get_dir_contents(self, dir):
         with get_client() as conn:
@@ -75,12 +86,19 @@ class Bucket():
         else:
             raise NameError("No directory starts with " + dir + " prefix.")
 
-    def find(self, search=None, prefix=None, suffix=None):
-        return get_matching_s3_keys(
-            bucket_contents=self.contents,
+    def find(self, search=None, prefix='', suffix='', all=False):
+        if all:
+            print("Searching full bucket contents.")
+            search_space = self.dir(all=True, prefix=prefix)
+        else:
+            search_space = self.shortlist
+
+        return search_contents(
+            keys=search_space,
             search=search,
             prefix=prefix,
-            suffix=suffix)
+            suffix=suffix,
+            all=all)
 
 
 class ProgressPercentage(object):
@@ -361,68 +379,54 @@ def delete_object(bucket_name, object_name):
         return True
 
 
-def get_bucket_keys(bucket_name, prefix='', suffix='', max=100, all=False):
-    """
-    Return generator that yields keys in S3 bucket.
-    **Adapted from https://alexwlchan.net/2017/07/listing-s3-keys/
-    """
-    with get_client() as connection:
-        response = connection.list_objects_v2(Bucket=bucket_name)
-
-    for obj in response['Contents']:
-        key = obj['Key']
-        if key.startswith(prefix) and key.endswith(suffix):
-            yield key
-    return response
-
 ## Adaped from https://alexwlchan.net/2019/07/listing-s3-keys/
 ## Special thanks to Alex Chan
-def get_matching_s3_objects(bucket, prefix="", suffix=""):
+def get_s3_objects(bucket, prefix=''):
     """
-    Generate objects in an S3 bucket.
+    Generate object keys in an S3 bucket.
 
     :param bucket: Name of the S3 bucket.
     :param prefix: Only fetch objects whose key starts with
         this prefix (optional).
     :param suffix: Only fetch objects whose keys end with
         this suffix (optional).
+
+    returns paginated generator object for all s3 objects in bucket
     """
     with get_client() as client:
         paginator = client.get_paginator("list_objects_v2")
 
-    kwargs = {'Bucket': bucket}
+    operation_parameters = {'Bucket': bucket, 'Prefix': prefix}
 
-    # We can pass the prefix directly to the S3 API.  If the user has passed
-    # a tuple or list of prefixes, we go through them one by one.
-    if isinstance(prefix, str):
-        prefixes = (prefix, )
-    else:
-        prefixes = prefix
+    # We can pass the prefix directly to the S3 API.
+    for page in paginator.paginate(**operation_parameters):
+        try:
+            contents = page["Contents"]
+            yield contents
+        except KeyError:
+            return
 
-    for key_prefix in prefixes:
-        kwargs["Prefix"] = key_prefix
 
-        for page in paginator.paginate(**kwargs):
-            try:
-                contents = page["Contents"]
-            except KeyError:
-                return
+def get_s3_keys(page):
+    # Pull keys from page of s3 objects
+    keys = []
+    for s3_object in page:
+            keys.append(s3_object['Key'])
+    return keys
 
-            for obj in contents:
-                key = obj["Key"]
-                if key.endswith(suffix):
-                    yield obj
 
-def get_matching_s3_keys(bucket_contents, search=None, prefix=None, suffix=None):
+def search_contents(keys, search=None, prefix=None, suffix=None, all=False):
     """
-    Generate the keys in an S3 bucket.
+    Search existing contents in bucket to find based on search criteria.
 
     :param bucket: Name of the S3 bucket.
     :param prefix: Only fetch keys that start with this prefix (optional).
     :param suffix: Only fetch keys that end with this suffix (optional).
     """
     find_list = []
-    for item in bucket_contents:
+    if len(keys) < len(keys[0]):
+        keys = keys[0]
+    for item in keys:
         test_item = item
         search_status = False
         if search: # If general search, screen for term right away

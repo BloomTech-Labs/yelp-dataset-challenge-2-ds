@@ -10,7 +10,7 @@ from functools import partial
 import logging
 import os
 from jobs import get_jobs, pop_current_job, read_job,\
-     download_data, delete_local_file, delete_s3_file
+     download_data, delete_local_file, delete_s3_file, load_data
 
 
 ###Logging###
@@ -109,22 +109,24 @@ def run_request(bunch, url, retry_size=20):
         for mini_bunch in databunch:
             run_request(bunch=mini_bunch, url=url, retry_size=min_size)
 
+# Deprecated. Table name now in job file under key tablename
+# def get_source_from_name(filename):
+#     for table_name in tables.keys():
+#         if table_name in filename:
+#             return tables[table_name]
+#     raise NameError('Tablename not found.  Aborting.')
 
-def get_source_from_name(filename):
-    for table_name in tables.keys():
-        if table_name in filename:
-            return tables[table_name]
-    raise NameError('Tablename not found.  Aborting.')
+
+# tables = {
+#     'business': 'businesses',
+#     'user': 'users',
+#     'checkin': 'checkins',
+#     'photo': 'photos',
+#     'tip': 'tips',
+#     'review': 'reviews',
+# }
 
 
-tables = {
-    'business': 'businesses',
-    'user': 'users',
-    'checkin': 'checkins',
-    'photo': 'photos',
-    'tip': 'tips',
-    'review': 'reviews',
-}
 
 
 if __name__ == "__main__":
@@ -134,31 +136,19 @@ if __name__ == "__main__":
     for i in range(num_jobs):
         # Get a job and read out the datapath
         current_job = pop_current_job()
-        asset = read_job(current_job)['Key']
-        # Hack fix for bad jobs on first run.  REMOVE THIS.
-        asset = asset.replace('Clean/', 'Processed/')
-        # REMOVE THE LINE ABOVE
+        asset = read_job(current_job)['file']
+        tablename = read_job(current_job)['tablename']
         write_logger.info('Running job {}.  Read file {}'.format(current_job, asset))
 
         # Load the data
         datapath = download_data(asset)
-        # TODO: Type check and read in data
-        data = pd.read_parquet(datapath)
-
-        # Hack fix for bad jobs on first run.  REMOVE THIS. UNFUCK THIS
-        data = data.rename(columns={
-            'tokens':'token',
-            'lemmas':'lemma',
-            'noun_chunks':'noun_chunk',
-            'vectors':'token_vector'
-        })
-        # REMOVE THE LINE ABOVE
+        data = load_data(datapath)
 
         # Build query package
-        package = df_to_query(df=data, tablename=get_source_from_name(asset))
+        package = df_to_query(df=data, tablename=tablename)
 
         # Split package
-        databunch = build_databunch(query=package, max_size=150)
+        databunch = build_databunch(query=package, max_size=50)
 
         # Connect and write to database via api
         parallel_post_requests(

@@ -55,6 +55,7 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
+*.sqlite3
 
 # Flask stuff:
 instance/
@@ -106,6 +107,7 @@ venv.bak/
 # AWS stuff
 *.aws
 *.data
+*.yelp
 
 # Dask stuff
 *dask-worker-space
@@ -115,3 +117,6 @@ venv.bak/
 
 # Model and Information Saves
 *.pkl
+
+# Linux Stuff
+*.directory

@@ -18,12 +18,16 @@ class Business(Base):
 
     business_id = Column(String, primary_key=True)
     name = Column(String)
+    address = Column(String)
+    city = Column(String)
+    state = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
-    postalcode = Column(Integer)
-    numreviews = Column(Integer)
+    postal_code = Column(String)
+    review_count = Column(Integer)
     stars = Column(Integer)
-    isopen = Column(Integer)
+    is_open = Column(Integer)
+    hours = Column(String)
     attributes = Column(String)
     categories = Column(String)
 
@@ -106,3 +110,36 @@ class Review(Base):
     lemma = Column(Text)
     business_id = Column(String, ForeignKey('businesses.business_id'))
     user_id = Column(String, ForeignKey('users.user_id'))
+
+
+class ReviewSentiment(Base):
+    __tablename__ = 'review_sentiment'
+
+    rs_id = Column(Integer, primary_key=True)
+    review_id = Column(String, ForeignKey('reviews.review_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
+
+
+class TipSentiment(Base):
+    __tablename__ = 'tip_sentiment'
+
+    ts_id = Column(Integer, primary_key=True)
+    tip_id = Column(String, ForeignKey('tips.tip_id'))
+    polarity = Column(Float)
+    subjectivity = Column(Float)
+
+
+class Viz2(Base):
+    __tablename__ = 'viz2'
+
+    vz_id = Column(Integer, primary_key=True)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    categories = Column(String)
+    percentile = Column(Float)
+    competitors = Column(Text)
+    bestinsector = Column(Text)
+    avg_stars_over_time = Column(Text)
+    chunk_sentiment = Column(Text)
+    count_by_star = Column(Text)
+    review_by_year = Column(Text)
