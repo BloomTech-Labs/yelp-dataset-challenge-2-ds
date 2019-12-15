@@ -17,22 +17,22 @@ def wc_count(docs):
 
 def timeseries(bus_id):
 
-    result = reviews.query.with_entities(reviews.tokens, reviews.date, \
-             reviews.star_review).filter_by(business_id=bus_id)
+    result = reviews.query.with_entities(reviews.token, reviews.date, \
+             reviews.stars).filter_by(business_id=bus_id)
     df = pd.read_sql(sql = result.statement, con = DB.engine)
-    df['tokens'] = df['tokens'].str.strip('\[').str.strip('\]').\
-        str.split(', ')
+    df['token'] = df['token'].apply(lambda x: [i.strip('{').strip('}') for i in x.split(',')])
+    print(df['token'].iloc[0])
     filtered = df.sort_values('date')
     filtered = filtered.reset_index()
     filtered['bins'] = pd.qcut(filtered.index, q=10, precision=0)
-    new_df = filtered.groupby('bins').agg({'tokens': 'sum', \
-            'star_review': 'mean', 'date': lambda x: x.iloc[-1]})
+    new_df = filtered.groupby('bins').agg({'token': 'sum', \
+            'stars': 'mean', 'date': lambda x: x.iloc[-1]})
 
     counts = []
     for i in range(len(new_df)):
-        wc_df = wc_count(new_df['tokens'].values[i])
+        wc_df = wc_count(new_df['token'].values[i])
         wc_df['date'] = new_df['date'].values[i]
-        wc_df['star_review'] = new_df['star_review'].values[i]
+        wc_df['star_review'] = new_df['stars'].values[i]
         counts.append(wc_df)
 
     df_final = pd.concat(counts)
