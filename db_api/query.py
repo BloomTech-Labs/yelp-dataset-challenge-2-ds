@@ -6,6 +6,8 @@ from db import get_session, get_db
 from flask import current_app, g
 import numpy as np
 import time
+import ujson
+import re
 
 
 query_logger = logging.getLogger(__name__)
@@ -163,6 +165,7 @@ def assign_maker(schema):
         'tip_sentiment': make_or_update_tip_sentiment,
         'viz2': make_or_update_viz2,
         'biz_words': biz_words,
+        'biz_comp': biz_comp,
     }
     return makers[schema]
 
@@ -280,3 +283,52 @@ def biz_words(session, params, *args, **kwargs):
     response = session.query(Review.date, Review.token, Review.stars).\
         filter(Review.business_id==params['business_id']).order_by(Review.date)
     return {'data': response.all()}
+
+
+def biz_comp(session, params, *args, **kwargs):
+    # Join select business information to viz2 aggregation data on business_id
+    response = session.query(
+            Business.business_id, Business.address, Business.city, Business.state,
+            Business.postal_code, Business.review_count, Viz2.categories, Viz2.percentile,
+            Viz2.competitors, Viz2.bestinsector, Viz2.avg_stars_over_time, Viz2.chunk_sentiment,
+            Viz2.count_by_star, Viz2.review_by_year).\
+            join(Viz2).filter(Business.business_id == params['business_id']).all()
+    
+    # Get first row (could use first() as well) and package output for easier processing
+    response = response[0]
+    # Parse nested fields into more readible format
+    def get_components(element):
+        return re.findall(r'\[([^]]+)\]', element)
+    def strip_json_artifacts(element):
+        return element.strip().strip("'")
+
+    avg_stars_components = get_components(response.avg_stars_over_time)
+    dates = [strip_json_artifacts(x) for x in avg_stars_components[1].split(',')]
+    avg_stars = [float(x) for x in avg_stars_components[0].split(',')]
+    
+    chunk_sentiment_components = get_components(response.chunk_sentiment)
+    noun_chunks = [strip_json_artifacts(x) for x in chunk_sentiment_components[0].split(',')]
+    chunk_sentiment = [float(strip_json_artifacts(x)) for x in chunk_sentiment_components[1].split(',')]
+
+    package = {
+        'business_id': response.business_id,
+        'address': response.address,
+        'city': response.city,
+        'state': response.state,
+        'postal_code': response.postal_code,
+        'review_count': response.review_count,
+        'categories': response.categories,
+        'percentile': response.percentile,
+        'competitors': [strip_json_artifacts(x) for x in ujson.loads(
+                        response.competitors).strip('[]').split(',')],
+        'bestinsector': [strip_json_artifacts(x) for x in ujson.loads(
+                        response.bestinsector).strip("[]").split(',')],
+        'avg_stars': avg_stars,
+        'dates': dates,
+        'noun_chunks': noun_chunks,
+        'chunk_sentiment': chunk_sentiment,
+        'count_by_star': eval(response.count_by_star), 
+        'review_by_year': eval(response.review_by_year),
+    }
+
+    return package
