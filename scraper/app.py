@@ -36,12 +36,15 @@ class Scraper():
         # Loop through hops until the end of path is reached
         pass
 
-    def move(self, d_theta=np.pi/12, c=XXX):
+    def move(self, d_theta=np.pi/12, c=0.025):
         # Calculate expected value for d_theta and adjust curvature
-        def delta_a(a, c, expected_value):
+        def delta_a(a, expected_value, c):
             return c * a * (50-expected_value)/expected_value
         
-        a = a + delta_a(a, c, expected_value)
+        expected_value = predict_capture()
+        a = self.coord_polar['a']
+        self.coord_polar['a'] = a + delta_a(a, c, expected_value)
+
 
     def search(self):
         results = search(
