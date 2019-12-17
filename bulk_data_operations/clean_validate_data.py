@@ -67,6 +67,8 @@ def load_data(filename):
 
     if filetype == 'json':
         data = pd.read_json(filename)
+    elif filetype == 'csv':
+        data = pd.read_csv(filename)
     return data
 
 
@@ -157,7 +159,7 @@ def tvf_business(filename):
         filetype='json'
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='POST')
+        generate_job(objectpath=path, job_type='POST')
 
 
 def tvf_user(filename):
@@ -171,7 +173,7 @@ def tvf_user(filename):
         path='Clean/',
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='POST')
+        generate_job(objectpath=path, job_type='POST')
 
 
 def tvf_checkin(filename):
@@ -187,7 +189,7 @@ def tvf_checkin(filename):
         path='Clean/',
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='POST')
+        generate_job(objectpath=path, job_type='POST')
 
 
 def tvf_photo(filename):
@@ -201,7 +203,7 @@ def tvf_photo(filename):
         path='Clean/',
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='POST')
+        generate_job(objectpath=path, job_type='POST')
 
 
 def tvf_tips(filename):
@@ -216,7 +218,7 @@ def tvf_tips(filename):
         path='Clean/',
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='NLP')
+        generate_job(objectpath=path, job_type='NLP')
 
 
 def tvf_review(filename):
@@ -230,7 +232,22 @@ def tvf_review(filename):
         path='Clean/',
         )
     for path in savepaths:
-        generate_job(savepath=path, job_type='NLP')
+        generate_job(objectpath=path, job_type='NLP')
+
+
+def tvf_viz2(filename):
+    print('Beginning Vizualization 2 transformation.')
+    data = load_data(filename)
+    savepaths = save_chunks(
+        data=data,
+        max_size=20000,
+        prefix='processed',
+        rootname='viz2',
+        path='Processed/',
+        filetype='json'
+        )
+    for path in savepaths:
+        generate_job(objectpath=path, tablename='viz2', job_type='POST', dry_run=False)
 
 
 table_transformers = {
@@ -240,6 +257,7 @@ table_transformers = {
     'photo': tvf_photo,
     'tip': tvf_tips,
     'review': tvf_review,
+    'viz2': tvf_viz2,
 }
 
 ######################
@@ -265,18 +283,9 @@ def generate_id(record):
 
 
 if __name__ == "__main__":
-    photos = 'photo.json'
-    tips = 'tip.json'
-    checkins = 'checkin.json'
-    reviews = 'review.json'
-    users = 'user.json'
-    businesses = 'business_transformed.json'
 
-    # route_data(photos)
-    # route_data(checkins)
-    # route_data(tips)
-    # route_data(users)
-    # route_data(reviews)
-    route_data(businesses)
+    # Example Usage
+    # businesses = 'business_transformed.json'
+    # route_data(businesses)
 
-    ## Completed 11/13/2019
+    route_data("viz2.json")
