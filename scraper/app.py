@@ -36,12 +36,15 @@ class Scraper():
         # Loop through hops until the end of path is reached
         pass
 
-    def move(self, d_theta=np.pi/12, c=XXX):
+    def move(self, d_theta=np.pi/12, c=0.025):
         # Calculate expected value for d_theta and adjust curvature
-        def delta_a(a, c, expected_value):
+        def delta_a(a, expected_value, c):
             return c * a * (50-expected_value)/expected_value
         
-        a = a + delta_a(a, c, expected_value)
+        expected_value = predict_capture()
+        a = self.coord_polar['a']
+        self.coord_polar['a'] = a + delta_a(a, c, expected_value)
+
 
     def search(self):
         results = search(
@@ -93,6 +96,7 @@ def calc_a_max(max_radius):
     a_max = min(a_max)/10
     return a_max
 
+
 def get_decimal_from_polar(center_coord, r, theta, a):
     def get_offset(theta, a):
         r = np.exp(-a*theta)
@@ -102,11 +106,20 @@ def get_decimal_from_polar(center_coord, r, theta, a):
     offset = get_offset(theta, a)
     return (center_coord[0]+offset[0], center_coord[1]+offset[1])
 
+
 def lookup_city_coordinates(city):
     # INCOMPLETE
     # TODO city lookup
     return (0,0)
-    
+
+
+def predict_capture():
+    pass
+
+
+def sample_data(coordinates):
+    pass
+
 
 
 if __name__ == "__main__":
