@@ -61,7 +61,10 @@ class Perceptron(Base):
     __tablename__ = 'perceptrons'
 
     geohash = Column(String, primary_key=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
     radius = Column(Float)
+    observations = Column(Integer)
     file_location = Column(String)
 
 
