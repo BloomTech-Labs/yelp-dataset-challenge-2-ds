@@ -1,11 +1,9 @@
-# dfs for testing
 import pandas as pd
-example = pd.read_csv('aggregatedata.csv')
-df = pd.read_json('sample_business.json')
+import category_encoders as ce
 
 #FUNCTION TO GET BUSINESSES IN SAME CATEGORIES AND SAME STATE (OUTPUT TO BE USED IN V1 OF GET COMPETITORS FUNCTION)
-# used business_id from the first row
-bus_id = '4B6HGu5C68dfUk5_N2lbYg'
+# The DF input needs the business_id column to be the index; df = set_index('business_id)
+# this function will be used by the next function.
 def get_categories(df, bus_id):
     filter = df.loc[bus_id]
     categories = filter['categories'].split(",")
@@ -28,6 +26,9 @@ def get_categories(df, bus_id):
 
 
 #FUNCTION TO GET TOP COMPETITORS FOR EACH BUSINESS - VERSION 1 (USING KNN)
+# ver2 is included so user can choose which. ver2 does not use knn.
+
+# imports for function
 from sklearn.neighbors import NearestNeighbors
 from collections import Counter
 from scipy.sparse import *
@@ -35,33 +36,13 @@ import numpy as np
 from scipy import *
 import category_encoders as ce
 
-def get_first(row):
-    first = row.split(',')[0]
-    return first
-
-df['categories'] = df['categories'].apply(lambda x: get_first(x))
-
-ordinal = ce.OrdinalEncoder(cols = ['categories', 'postal_code']).fit(df)
-ordinal2 = ce.OrdinalEncoder(cols = ['postal_code']).fit(df)
-newnumericdata = ordinaltwo.transform(df)
-numericdata = ordinal.transform(df)
-
-processed = numericdata[['business_id','is_open', 'latitude', 'longitude', 'review_count', 'stars', 'categories', 'postal_code']]
-processed = processed.set_index('business_id')
-processed2 = newnumericdata2.drop(columns=['address','attributes','city','hours','name','state'])
-processed2 = processed2.set_index('business_id')
-bus_matrix = csr_matrix(processed2.values)
-
+# uses get_category above
 def get_competitors(df):
-    # import category_encoders as ce
-    # ordinal = ce.OrdinalEncoder(cols = ['postal_code', 'categories']).fit(df)
-    # df_knn = ordinal.transform(df)
-    # df_knn = df_knn.rename(columns={"categories": "num_categories"})
     competitorlist = []
     for i in range(len(df)):
         data = get_categories(df, df.index[i])
         data['common_cat_rank'] = list(range(len(data),0,-1))
-        numinfo = data[['is_open', 'latitude', 'longitude', 'review_count', 'stars', 'postal_code', 'common_cat_rank']]
+        numinfo = data[['is_open', 'latitude', 'longitude', 'review_count', 'stars', 'common_cat_rank']]
         numcomp = len(numinfo)
         if numcomp < 11:
             n_neighbors = numcomp
@@ -75,6 +56,49 @@ def get_competitors(df):
         competitorlist.append(competitors)
     df['competitors'] = competitorlist
     return df
+
+# #FUNCTION TO GET TOP COMPETITORS FOR EACH BUSINESS - VERSION 2
+# #Step 1 - Expand categories column of businesses file
+# expand_categories = pd.concat([df, df['categories'].str.split(', ', expand=True)], axis=1)
+# expand_categories = expand_categories.rename(columns={0: "category_1", 1: "category_2", 2: "category_3", 3: "category_4", 4: "category_5", 5: "category_6"})
+# expand_categories.iloc[:,17:23] = expand_categories.iloc[:,17:23].fillna("No category")
+# #Step 2 - Create empty column to be populated with data as function updates records.
+# #Pass dataframe through function to get list of top 10 competitors for each business.
+# expand_categories['competitors'] = np.nan
+# import scipy
+# import numpy as np
+# from scipy import spatial
+# def identify_competitors(df):
+#     for i in range(len(df)):
+#         if (type(df['competitors'].iloc[i]) != list):
+#             categories = df.iloc[i,17:23].values.flatten().tolist()
+#             collist = [x for x in categories if not x.startswith('No category')]
+#             mask = df.iloc[:,17:23].isin(collist)
+#             mask['num_true'] = mask.iloc[:,0:6].sum(axis=1)
+#             masktrue = mask.sort_values(by=['num_true'], ascending=False).any(axis=1)
+#             filtered = df.loc[masktrue[masktrue].index]
+#             num_true = mask.sort_values(by=['num_true'], ascending=False)['num_true'][0:len(filtered)].tolist()
+#             filtered['order'] = num_true
+#             row = df.iloc[i].to_frame().T
+#             for x in df.columns:
+#                 row[x]=row[x].astype(row[x].dtypes.name)
+#             row['order'] = max(num_true)
+#             ary = scipy.spatial.distance.cdist(filtered[['latitude','longitude','percentile', 'order']], \
+#                   row[['latitude','longitude','percentile', 'order']], metric='euclidean')
+#             top_comp = np.sort(ary.flatten())[:11]
+#             mask_comp = np.isin(ary, top_comp)
+#             competitors = filtered[mask_comp]['name'].tolist()
+#             if len(competitors) > 1:
+#                 indeces = filtered[mask_comp].index.tolist()
+#                 competitors.pop(0)
+#                 info = pd.DataFrame(df[['competitors']][df.index.isin(indeces)])
+#                 info['competitors'] = [competitors]*len(info)
+#                 df.update(info)
+#             else:
+#                 pass
+#         else:
+#             continue
+#     return df
 
 
 #FUNCTION TO GET PERCENTILE SCORE FOR EACH BUSINESS
@@ -105,26 +129,12 @@ def get_index(df):
     return df
 
 
-#FUNCTION TO GET AVERAGE STAR RATING OVER AVAILABLE TIME PERIOD FROM BUSINESSES FILE
-def avg_star_rating(df):
-   df['date_list'] = df.apply(lambda row: [row['date_time']], axis=1)
-   df['star_review_list'] = df.apply(lambda row: [row['star_review']], axis=1)
-   grouped = df.sort_values(by=['business_id', 'date_time'], ascending=True).groupby('business_id')\
-                               .agg({'date_list': 'sum', 'star_review_list': 'sum'})
-   grouped['star_review_list'] = grouped['star_review_list'].apply(lambda x: np.array(x))
-   grouped['date_list'] = grouped['date_list'].apply(lambda x: np.array(x, dtype='datetime64[s]'))
-   grouped['star_ave'] = grouped['star_review_list'].apply(lambda x: [x[np.digitize(list(range(0, len(x), 1)),\
-                         np.linspace(0, len(x), 11)) == i].mean() for i in range(1, \
-                         len(np.linspace(0, len(x), 11)))] if len(x) > 10 else x)
-   grouped['date_ave'] = grouped['date_list'].apply(lambda x: [x[np.digitize(list(range(0, len(x), 1)), \
-                         np.linspace(0, len(x), 11)) == i].view('i8').mean().astype('datetime64[s]') \
-                         for i in range(1, len(np.linspace(0, len(x), 11)))] if len(x) > 10 else x)
-   return grouped
 
 
 # run all function is below
 
 # RUN_ALL FUNCTION TO DO PROCESSES
+# returns a new DF with all the new data
 
 def run_all(df):
   get_categories(df, bus_id)
