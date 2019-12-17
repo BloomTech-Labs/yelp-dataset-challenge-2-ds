@@ -137,8 +137,6 @@ def get_index(df):
 # returns a new DF with all the new data
 
 def run_all(df):
-  get_categories(df, bus_id)
   get_competitors(df)
   get_index(df)
-  avg_star_rating(df)
   return df
