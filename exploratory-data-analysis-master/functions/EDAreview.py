@@ -2,7 +2,10 @@
 #Step 1 - Get reviews file and group by business id and aggregate noun chunks column and polarity score column:
 sentiment_chunks = df.groupby('business_id').agg({'ngram': 'sum', 'polarity_list': 'sum'})
 #Step 2 - Create empty columns to be populated with list of noun chunks and sentiment scores.
-#Process noun chunks to return list of top 10 positive and negative noun chunks for each business (one column for sentiment and second column for list of noun chunks)
+#Process noun chunks to return list of top 10 positive and negative noun chunks for each business
+# (one column for sentiment and second column for list of noun chunks)
+
+# the get_sentiment_chunks function is throwing an error 
 sentiment_chunks['top_chunks'] = np.nan
 sentiment_chunks['top_sentiment'] = np.nan
 from collections import defaultdict

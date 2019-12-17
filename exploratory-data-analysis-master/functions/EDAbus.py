@@ -33,12 +33,35 @@ from collections import Counter
 from scipy.sparse import *
 import numpy as np
 from scipy import *
+import category_encoders as ce
+
+def get_first(row):
+    first = row.split(',')[0]
+    return first
+
+df['categories'] = df['categories'].apply(lambda x: get_first(x))
+
+ordinal = ce.OrdinalEncoder(cols = ['categories', 'postal_code']).fit(df)
+ordinal2 = ce.OrdinalEncoder(cols = ['postal_code']).fit(df)
+newnumericdata = ordinaltwo.transform(df)
+numericdata = ordinal.transform(df)
+
+processed = numericdata[['business_id','is_open', 'latitude', 'longitude', 'review_count', 'stars', 'categories', 'postal_code']]
+processed = processed.set_index('business_id')
+processed2 = newnumericdata2.drop(columns=['address','attributes','city','hours','name','state'])
+processed2 = processed2.set_index('business_id')
+bus_matrix = csr_matrix(processed2.values)
+
 def get_competitors(df):
+    # import category_encoders as ce
+    # ordinal = ce.OrdinalEncoder(cols = ['postal_code', 'categories']).fit(df)
+    # df_knn = ordinal.transform(df)
+    # df_knn = df_knn.rename(columns={"categories": "num_categories"})
     competitorlist = []
     for i in range(len(df)):
         data = get_categories(df, df.index[i])
         data['common_cat_rank'] = list(range(len(data),0,-1))
-        numinfo = data[['is_open', 'latitude', 'longitude', 'num_categories', 'review_count', 'stars', 'postal_code', 'common_cat_rank']]
+        numinfo = data[['is_open', 'latitude', 'longitude', 'review_count', 'stars', 'postal_code', 'common_cat_rank']]
         numcomp = len(numinfo)
         if numcomp < 11:
             n_neighbors = numcomp
