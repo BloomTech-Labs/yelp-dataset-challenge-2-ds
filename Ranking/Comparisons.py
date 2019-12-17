@@ -5,6 +5,11 @@
 import pandas as pd
 import logging
 import os
+import json
+from pandas.io.json import json_normalize
+from config import DATABASE_URI
+from models import *
+from db import get_session
 from jobs import get_jobs, pop_current_job, read_job, \
     download_data, delete_local_file, delete_s3_file, load_data, \
         write_data, generate_job
@@ -17,11 +22,68 @@ log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
 ###---------Processing Functions----------###
-def filtered_data(business_id):
-    # connect to db
-    # filter by business state and category
-    # return df of relevant businesses
-    pass
+def get_business_info(business_id):
+    with get_session() as session:
+
+        # Getting info about business for filtering
+        business_query = session.query(
+            Business.state, Business.latitude, Business.longitude, \
+            Business.hours, Business.attributes, Business.categories 
+            ).filter(Business.business_id==business_id).all()
+        business_df = pd.DataFrame(business_query)
+        business_df = clean_business_data(business_df)
+
+    return business_df
+
+
+from sqlalchemy import or_
+
+foo = ['a%', 'b%']
+DBSession().query(MyTable).filter(or_(*[Business.categories.contains(category) for category in categories]))
+
+def filtered_data(business_df):
+
+    state = business_df.iloc[0].state
+    categories = business_df.iloc[0].categories
+
+    with get_session() as session:
+        filter_query = session.query(
+            Business.state, Business.latitude, Business.longitude, \
+            Business.hours, Business.attributes, Business.categories \
+            ).filter(Business.state==state).filter(or_(\
+            *[Business.categories.contains(category) for category in \
+            categories])).all()
+        filtered_df = pd.DataFrame(filter_query)
+    
+    filtered_df = clean_business_data(filtered_df)
+
+    # Filtering to only businesses that share at least one category
+    category_condition = (filtered_df['category'] & business_df['category'])
+    filtered_df = filtered_df[condition]
+
+    return filtered_df
+
+def get_categories(categories):
+    categories = set(categories.split(', '))
+    return categories
+
+def clean_business_data(df):
+
+    # convert attributes from string to dict
+    df['attributes'] = df.attributes.apply(json.loads)
+
+    # create new column for each attribute
+    attributes = json_normalize(df['attributes'])
+
+    # combining attributes and original dataframes
+    cleaned = pd.concat([df, attributes], axis=1)
+    cleaned.drop(['attributes'], axis='columns', inplace=True)
+
+    # converting categories from string to set
+    cleaned.categories = df.categories.apply(get_categories)
+
+    return cleaned
+
 
 def get_row_from_id(business_id):
     pass
