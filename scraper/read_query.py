@@ -11,6 +11,10 @@ import logging
 read_logger = logging.getLogger(__name__)
 
 
+####################
+### Read Queries ###
+####################
+
 def sample_data(coordinates, model_radius=0.05):
     with get_session() as session:
         response = session.query(SearchResults.latitude, SearchResults.longitude, \
