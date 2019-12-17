@@ -10,7 +10,12 @@ import sqlite3
 from .perceptron import Perceptron
 from .geohash import decode, encode
 import numpy as np
+from math import ceil
 import pickle
+
+import logging
+
+mm_logger = logging.getLogger(__name__)
 
 
 class ModelMap():
@@ -51,19 +56,27 @@ class ModelMap():
         }
 
     def predict(self, coordinates, bootstrap=10, **kwargs):
+        # Check if model is pinned at given coordinates
         model = self.search_models(coordinates)
         if model:
-            X = sample_data(coordinates, self.model_radius)
-            return model.predict(X)
+            X, y = sample_data(coordinates, self.model_radius)
+            if model['observations'] < X:
+                self.update_model(model['network'], X, y)
+            return model['network'].predict(X)
         pass
 
     def clean_cache(self, threshold):
         # Remove element from cache if not in use to prevent memory explosion
         pass
 
-    def update_model(self, X, y):
-        # TODO Update existing model with new X, y (transfer learning)
-        pass
+    def update_model(self, model, X, y):
+        # Pass in model object including all information from the database and 
+        #   loaded model as dict
+        train_network(
+            model=model,
+            X=X,
+            y=y
+        )
 
     def search_models(self, coordinates, limit=0.01):
         # TODO Lookup which model is most appropriate for search
@@ -130,8 +143,10 @@ def create_network(network_description):
     neural_net = Perceptron(network_description)
     return neural_net
 
-def train_network(network, X, y, num_epochs=20):
-    network.fit(X, y, epochs=num_epochs)
+def train_network(model, X, y, num_epochs=2000):
+    mm_logger.info('Training network at latitude: {}, longitude: {}'.\
+        format(model['latitude'], model['longitude']))
+    model['network'].fit(X, y, epochs=num_epochs)
 
 def save_model(object_to_save, savename, root_path='/tmp/'):
     filepath = root_path+savename+'.pkl'
