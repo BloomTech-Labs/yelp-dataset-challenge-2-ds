@@ -9,7 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 from sqlalchemy import \
-    (Column, Integer, String, ForeignKey, DateTime, Float, Binary, Text)
+    (Column, Integer, String, ForeignKey, DateTime, Float, Binary, Text,
+        UniqueConstraint, ForeignKeyConstraint)
 from sqlalchemy.orm import relationship
 
 ###Data Models###
@@ -74,5 +75,12 @@ class SearchResults(Base):
     search_num = Column(Integer, primary_key=True)
     latitude = Column(Float)
     longitude = Column(Float)
-    category = Column(String)
+    category = Column(String, ForeignKey('categories.cat_name'))
     num_unique = Column(Integer)
+
+
+class Category(Base):
+    __tablename__ = 'categories'
+
+    cat_id = Column(Integer, primary_key=True)
+    cat_name = Column(String)

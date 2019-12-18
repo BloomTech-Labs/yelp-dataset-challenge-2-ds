@@ -49,4 +49,11 @@ def write_search_metadata(**kwargs):
     with get_session() as session:
         session.add(SearchResults(**kwargs['record']))
         session.commit()
+
+
+def write_categories(category_list):
+    with get_session() as session:
+        for category in category_list:
+            session.add(Category(cat_name=category))
+            session.commit()
         
