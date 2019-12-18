@@ -10,10 +10,11 @@ from pandas.io.json import json_normalize
 from config import DATABASE_URI
 from models import *
 from db import get_session
+from sqlalchemy import or_
 from jobs import get_jobs, pop_current_job, read_job, \
     download_data, delete_local_file, delete_s3_file, load_data, \
         write_data, generate_job
-
+from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 
@@ -22,7 +23,7 @@ log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
 ###---------Processing Functions----------###
-def get_business_info(business_id):
+def get_business_df(business_id):
     with get_session() as session:
 
         # Getting info about business for filtering
@@ -36,30 +37,20 @@ def get_business_info(business_id):
     return business_df
 
 
-from sqlalchemy import or_
-
-foo = ['a%', 'b%']
-DBSession().query(MyTable).filter(or_(*[Business.categories.contains(category) for category in categories]))
-
-def filtered_data(business_df):
+def get_filtered_df(business_df):
 
     state = business_df.iloc[0].state
     categories = business_df.iloc[0].categories
 
     with get_session() as session:
-        filter_query = session.query(
-            Business.state, Business.latitude, Business.longitude, \
-            Business.hours, Business.attributes, Business.categories \
-            ).filter(Business.state==state).filter(or_(\
+        filter_query = session.query(Business.latitude, \
+            Business.longitude, Business.attributes, Business.categories \
+            ).filter(Business.state==state).filter(or_( \
             *[Business.categories.contains(category) for category in \
             categories])).all()
         filtered_df = pd.DataFrame(filter_query)
     
     filtered_df = clean_business_data(filtered_df)
-
-    # Filtering to only businesses that share at least one category
-    category_condition = (filtered_df['category'] & business_df['category'])
-    filtered_df = filtered_df[condition]
 
     return filtered_df
 
@@ -84,15 +75,34 @@ def clean_business_data(df):
 
     return cleaned
 
+def extra_categories(categories, business_categories):
+    n_common_categories = len(categories & business_categories)
+    extra_categories = len(categories) - n_common_categories
+    return extra_categories
 
-def get_row_from_id(business_id):
-    pass
+def category_check(categories, category):
+    if category in categories:
+        return 1
+    else:
+        return 0
 
-def get_comparison_group(business_id):
-    businesses = filtered_data(business_id)
+def get_comparison_group(filtered_df, business_df):
+    # creating new column for each category in original business
+    business_categories = business_df.categories.iloc[0]
+    for category in business_categories:
+        filtered_df[category] = filtered_df.categories.apply(category_check, args=[category,])
+        business_df[category] = 1
+    
+    # creating new column with count of categories 
+    # the original business didn't have
+    business_df['extra_categories'] = 0
+    filtered_df['extra_categories'] = filtered_df.categories.apply( \
+        extra_categories, args=[business_categories,])
+
+    # create column for number 
     # TODO impute missing values in businesses?
     scaler = StandardScaler()
-    df_scaled = scaler.fit_transform(businesses)
+    df_scaled = scaler.fit_transform(filtered_df)
     df_scaled = pd.DataFrame(df_scaled, columns = df.columns)
     
     neigh = NearestNeighbors(n_neighbors=20)
@@ -128,7 +138,9 @@ if __name__ == "__main__":
         # Load the data
         datapath = download_data(asset)
         df = load_data(datapath)
-        sentiment_df = add_comparisons(df)
+        business_df = get_business_df(business_id)
+        filtered_df = get_filtered_df(business_df)
+        # sentiment_df = add_comparisons(df)
 
         # Write Data to s3
         savepath = asset+'_sentiment'
