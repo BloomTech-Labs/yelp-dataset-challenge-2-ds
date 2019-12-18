@@ -10,11 +10,7 @@ Scraper to get yelp business data, images, and reviews.
 
 ### Making Scrape Request
 
-### Seeding the Scraper
-
-NOTES HERE
-
-### Updates
+## Updates
 
 *Version Information*
 
@@ -22,16 +18,22 @@ NOTES HERE
 
 ## Testing
 
-Testing is currently a top to bottom python script tests.py and tests expected usage of the API.
+Not Implemented Yet
 
 ### Running the test script
 
-> Navigate to app.py directory and start flask server with: python app.py
+> Navigate to ...
 > Run test scripts with: python tests.py
 
 ## Notes
 
+### Decimal Degrees - Scaling
 
+From Wikipedia: https://en.wikipedia.org/wiki/Decimal_degrees
+
+> Minimum Jump: **0.001** Approximately a neighborhood, streed (~111m)
+> Minimum Model Radius: **0.01** Approximately a town or village (~1.11km)
+> Maximum Model Radius: **0.05** Half a city or district (~5.55km)
 
 ### Logging
 
