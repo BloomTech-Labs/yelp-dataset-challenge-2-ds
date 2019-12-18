@@ -5,6 +5,7 @@ import pandas as pd
 from collections import Counter
 from sqlalchemy import or_
 from scipy.stats import zscore, norm
+from sqlalchemy.exc import SQLAlchemyError
 
 # Adapted from code here: https://github.com/DistrictDataLabs/blog-files/blob/master/computing-bayesian-average-of-star-ratings/code/stars.py
 # based on article here: https://medium.com/district-data-labs/computing-a-bayesian-estimate-of-star-rating-means-651496a890ab
@@ -78,7 +79,13 @@ is equivalent to the composite z-score to form the final percentile
 ranking.
 """
 
-class Ratings(object):
+###-------------Logging-------------------###
+main_logger = logging.getLogger(__name__+" Ranking Controller")
+log_path = os.path.join(os.getcwd(), 'debug.log')
+logging.basicConfig(filename=log_path, level=logging.INFO)
+
+###---------Master Ranking Object---------###
+class Rankings(object):
     """
     An analytical wrapper that manages access to the data and wraps various
     statistical functions for easy and quick evaluation.
@@ -170,6 +177,8 @@ class Ratings(object):
         ## TODO change from test list##
         ###############################
         # this needs to be a query that returns what is in the db
+        # implement try/except block like other db queries
+
         comparison_ids = [
         'ujmEBvifdJM6h6RLv4wQIg',
             'NZnhc2sEQy3RmzKTZnqtwQ',
@@ -187,51 +196,62 @@ class Ratings(object):
     def get_comparison_dfs(self):
 
         comparison_ids = self.comparison_ids
+        try:
+            with get_session() as session:
 
-        with get_session() as session:
+                review_query = session.query(Review.business_id, Review.review_id, Review.stars, \
+                    Review.useful, ReviewSentiment.review_id, Review.date, \
+                    ReviewSentiment.polarity, ReviewSentiment.subjectivity \
+                    ).join(ReviewSentiment).filter(or_(*[Review.business_id == id \
+                    for id in comparison_ids])).all()
+                comparison_review_df = pd.DataFrame(review_query)
+                comparison_review_df = self.weight_review_polarity(comparison_review_df)
 
-            review_query = session.query(Review.business_id, Review.review_id, Review.stars, \
-                Review.useful, ReviewSentiment.review_id, Review.date, \
-                ReviewSentiment.polarity, ReviewSentiment.subjectivity \
-                ).join(ReviewSentiment).filter(or_(*[Review.business_id == id \
-                for id in comparison_ids])).all()
-            comparison_review_df = pd.DataFrame(review_query)
-            comparison_review_df = self.weight_review_polarity(comparison_review_df)
-
-            tip_query = session.query(Tip.date, \
-                Tip.compliment_count, Tip.business_id, \
-                TipSentiment.tip_id, TipSentiment.polarity, \
-                TipSentiment.subjectivity \
-                ).join(TipSentiment).filter(or_(*[Tip.business_id == id \
-                for id in comparison_ids])).all()
-            comparison_tip_df = pd.DataFrame(tip_query)
-            comparison_tip_df = self.weight_tip_polarity(comparison_tip_df)
-
-        return comparison_review_df, comparison_tip_df
+                tip_query = session.query(Tip.date, \
+                    Tip.compliment_count, Tip.business_id, \
+                    TipSentiment.tip_id, TipSentiment.polarity, \
+                    TipSentiment.subjectivity \
+                    ).join(TipSentiment).filter(or_(*[Tip.business_id == id \
+                    for id in comparison_ids])).all()
+                comparison_tip_df = pd.DataFrame(tip_query)
+                comparison_tip_df = self.weight_tip_polarity(comparison_tip_df)
+        
+        # handling database errors, recursively calling get_business_df()
+        except SQLAlchemyError as e:
+            main_logger.exception(str(e.__dict__['orig']))
+            comparison_review_df, comparison_tip_df = self.get_comparison_dfs()
+        
+        finally:
+            return comparison_review_df, comparison_tip_df
 
     def get_business_data(self):
 
-        # TODO handle exceptions connecting to db
-        with get_session() as session:
+        try:
+            with get_session() as session:
 
-            # Getting review info
-            review_query = session.query(Review.review_id, Review.stars, \
-                Review.useful, Review.date, \
-                ReviewSentiment.polarity, ReviewSentiment.subjectivity \
-                ).join(ReviewSentiment).filter(Review.business_id==self.business_id).all()
-            review_df = pd.DataFrame(review_query)
-            review_df = self.weight_review_polarity(review_df)
+                # Getting review info
+                review_query = session.query(Review.review_id, Review.stars, \
+                    Review.useful, Review.date, \
+                    ReviewSentiment.polarity, ReviewSentiment.subjectivity \
+                    ).join(ReviewSentiment).filter(Review.business_id==self.business_id).all()
+                review_df = pd.DataFrame(review_query)
+                review_df = self.weight_review_polarity(review_df)
 
-            # Getting tip info
-            tip_query = session.query(Tip.date, \
-                Tip.compliment_count, \
-                TipSentiment.tip_id, TipSentiment.polarity, \
-                TipSentiment.subjectivity \
-                ).join(TipSentiment).filter(Tip.business_id==self.business_id).all()
-            tip_df = pd.DataFrame(tip_query)
-            tip_df = self.weight_tip_polarity(tip_df)
-
-        return review_df, tip_df
+                # Getting tip info
+                tip_query = session.query(Tip.date, \
+                    Tip.compliment_count, \
+                    TipSentiment.tip_id, TipSentiment.polarity, \
+                    TipSentiment.subjectivity \
+                    ).join(TipSentiment).filter(Tip.business_id==self.business_id).all()
+                tip_df = pd.DataFrame(tip_query)
+                tip_df = self.weight_tip_polarity(tip_df)
+        
+        except SQLAlchemyError as e:
+            main_logger.exception(str(e.__dict__['orig']))
+            review_df, tip_df = self.get_business_data()
+        
+        finally:
+            return review_df, tip_df
     
     def get_dirichlet_prior(self):
         value_counts = self.comparison_review_df.stars.value_counts()
@@ -291,13 +311,7 @@ class Ratings(object):
 
         z_composite = weighted_r_polarity + weighted_t_polarity + weighted_z_stars
 
+        # get percentile
         percentile = norm.cdf(z_composite)
 
         return percentile
-        
-
-
-
-### Scratchpaper
-#TODO delete this
-business_id = '1SWheh84yJXfytovILXOAQ'
