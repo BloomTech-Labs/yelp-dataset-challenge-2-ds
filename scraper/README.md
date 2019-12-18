@@ -1,10 +1,12 @@
 # Yelp Scraper
 
-Scraper to get yelp business data, images, and reviews.
+An intelligent API access framework to pull large amounts of data over a geographic area with limited API output.
 
 **Features** include:
 
-* One thing and another
+* API wrapper in consolidated scraper class that can be called with city name or centroid coordinates.
+
+* Predictive pathing adjustment to control scraper traversal in geographic region to help minimize get requests, maximize returns.
 
 ## Usage
 
