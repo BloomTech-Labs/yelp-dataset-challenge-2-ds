@@ -1,13 +1,5 @@
-# stars
-# Ranks the MovieLens data set by star rating.
-#
-# Author:   Benjamin Bengfort <benjamin@bengfort.com>
-# Created:  Thu Aug 28 16:32:47 2014 -0400
-#
-# Copyright (C) 2014 Bengfort.com
-# For license information, see LICENSE.txt
-#
-# ID: stars.py [] benjamin@bengfort.com $
+# Adapted from code here: https://github.com/DistrictDataLabs/blog-files/blob/master/computing-bayesian-average-of-star-ratings/code/stars.py
+# based on article here: https://medium.com/district-data-labs/computing-a-bayesian-estimate-of-star-rating-means-651496a890ab
 
 """
 Ranks the MovieLens data set by star rating.
@@ -65,14 +57,14 @@ class Ratings(object):
             raise TypeError("Bayesian mean must be computed with m and C")
 
         return (self.confidence * self.prior + arr.sum()) / (self.confidence + arr.count())
-
+    
     def dirichlet_mean(self, arr, prior=PRIOR):
         """
         Computes the Dirichlet mean with a prior.
         """
         counter   = Counter(arr)
         votes     = [counter.get(n, 0) for n in range(1, 6)]
-        posterior = map(sum, zip(votes, prior))
+        posterior = list(map(sum, zip(votes, prior)))
         N         = sum(posterior)
         weights   = map(lambda i: (i[0]+1)*i[1], enumerate(posterior))
 
@@ -83,7 +75,7 @@ class Ratings(object):
         """
         Returns the data grouped by Movie
         """
-        return self.data.groupby('title')
+        return self.data.groupby('movieId')
 
     def get_means(self):
         return self.movies['rating'].mean()
@@ -137,3 +129,15 @@ if __name__ == '__main__':
 def get_title(movieId, movies):
     movies = movies[movies['movieId']==movieId]
     return movies.title.iloc[0]
+
+def dirichlet_mean(self, group, prior=PRIOR):
+    """
+    Computes the Dirichlet mean with a prior.
+    """
+    counter   = Counter(group['rating'])
+    votes     = [counter.get(n, 0) for n in range(1, 6)]
+    posterior = list(map(sum, zip(votes, prior)))
+    N         = sum(posterior)
+    weights   = map(lambda i: (i[0]+1)*i[1], enumerate(posterior))
+
+    return float(sum(weights)) / N
