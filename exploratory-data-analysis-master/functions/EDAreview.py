@@ -39,11 +39,11 @@ def get_sentiment_chunks(df):
     return df
 
 #FUNCTION TO GET AVERAGE STAR RATING OVER AVAILABLE TIME PERIOD FROM REVIEWS FILE
-import datetime as datetime
+from datetime import datetime
 def avg_star_rating(df):
-   df['date_time'] = pd.to_datetime(df['date_time'])
+   df['date_time'] = pd.to_datetime(df['date'])
    df['date_list'] = df.apply(lambda row: [row['date_time']], axis=1)
-   df['star_review_list'] = df.apply(lambda row: [row['star_review']], axis=1)
+   df['star_review_list'] = df.apply(lambda row: [row['stars']], axis=1)
    grouped = df.sort_values(by=['business_id', 'date_time'], ascending=True).groupby('business_id')\
                                .agg({'date_list': 'sum', 'star_review_list': 'sum'})
    grouped['star_review_list'] = grouped['star_review_list'].apply(lambda x: np.array(x))
@@ -69,4 +69,6 @@ def get_review_dist(df):
    review_dist.columns = review_dist.columns.map(lambda x: ''.join([*map(str, x)]))
    review_dist = review_dist.reset_index()
    return review_dist
+
+
 
