@@ -19,11 +19,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 from sqlalchemy.exc import SQLAlchemyError
 
-###-------------Logging-------------------###
-main_logger = logging.getLogger(__name__+" Comparison Controller")
-log_path = os.path.join(os.getcwd(), 'debug.log')
-logging.basicConfig(filename=log_path, level=logging.INFO)
-
 ###---------Processing Functions----------###
 def get_business_df(business_id):
     try:
@@ -148,6 +143,10 @@ def get_comparison_group(business_df, filtered_df):
     scaled = scaler.fit_transform(encoded)
     scaled = pd.DataFrame(scaled, columns = business_df.columns)
     
+    # manual encoding should convert almost all attribute entries to numbers
+    # if not, they will be converted to NaN after scaling
+    scaled = scaled.fillna(0)
+
     scaled_business = scaler.transform(encoded_business)
     scaled_business = pd.DataFrame(scaled_business, columns = scaled.columns)
 
@@ -222,7 +221,10 @@ def encode_attributes(df):
 ### TODO Change to read all business_ids from DB, not jobs/S3 ###
 if __name__ == "__main__":
 
-    main_logger = logging.getLogger(__name__+" Comparisons Adder")
+    ###-------------Logging-------------------###
+    main_logger = logging.getLogger(__name__+" Comparison Controller")
+    log_path = os.path.join(os.getcwd(), 'debug.log')
+    logging.basicConfig(filename=log_path, level=logging.INFO)
 
     num_jobs = len(get_jobs('comparisons')) # No module creates comparison jobs.  Manually create these.
 
