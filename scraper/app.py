@@ -7,8 +7,10 @@ Master control module for yelp scraper
 import logging
 import os
 import numpy as np
+import pandas as pd
 from scraper_1_urls import search
-from write_query import (filter_unique, write_business_search, write_search_metadata)
+from write_query import (filter_unique, write_business_search, write_search_metadata,
+                            write_categories)
 
 
 ###############
@@ -120,6 +122,12 @@ def predict_capture():
 def sample_data(coordinates):
     pass
 
+
+def load_categories(filename = 'categories.json'):
+    categories = pd.read_json(filename)
+    category_list = categories.query("country == 'US'").parent.unique().tolist()
+    write_categories(category_list=category_list)
+    
 
 
 if __name__ == "__main__":
