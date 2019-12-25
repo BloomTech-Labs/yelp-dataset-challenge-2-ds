@@ -138,7 +138,7 @@ def bootstrap_search(center_coord: tuple):
     # Generate area map (model positions)
     g.modelmap = lens.ModelMap(
         center_coord = center_coord,
-        map_radius=1,
+        map_radius=0.5,
         model_radius=0.1,
     )
     # Initialize scrapers
@@ -151,18 +151,18 @@ def bootstrap_search(center_coord: tuple):
                 category=category
                 )
             )   
-    # Run scrapers on initial coordinates
-    for scraper in g.scrapers:
-        scraper.search()
-        time.sleep(np.random.randint(2,5))  # Yelp FusionAPI seems ok with rand(2,5) delay
     
-    # Run again on random set of model coordinates to fill map in
-    for index in np.random.choice(len(categories), len(categories)/20, replace=False):
-        print('Search at {}'.format(categories[index]))
-        scraper_logger.info('Searching all categories at {}'.format(categories[index]))
+    # Run on random set of model coordinates to fill map in
+    for index in np.random.choice(len(g.modelmap.map), int(len(g.modelmap.map)/20), replace=False):
+        print('Search at {}'.format(g.modelmap.map[index]))
+        scraper_logger.info('Searching all categories at {}'.format(g.modelmap.map[index]))
         for scraper in g.scrapers:
-            scraper.coordinates = categories[index]
-            scraper.search()
+            scraper.coordinates = g.modelmap.map[index]
+            try:
+                scraper.search()
+            except:
+                scraper_logger.error('YelpAPIError: INTERNAL_ERROR.  Passing search.')
+            time.sleep(np.random.randint(2,5))  # Yelp FusionAPI seems ok with rand(2,5) delay
 
 
 if __name__ == "__main__":
