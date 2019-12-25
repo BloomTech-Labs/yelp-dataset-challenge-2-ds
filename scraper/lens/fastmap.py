@@ -93,8 +93,8 @@ def get_grid_coord(c_lat, c_lon, point_radius, max_radius):
     longitudes = generate_row(center=c_lon, point_radius=point_radius, max_radius=max_radius)
     
     rows = []
-    for latitude in latitudes:
-        rows += list(zip(longitudes, [latitude]*len(longitudes)))
+    for longitude in longitudes:
+        rows += list(zip(latitudes, [longitude]*len(latitudes)))
         
     return rows
 

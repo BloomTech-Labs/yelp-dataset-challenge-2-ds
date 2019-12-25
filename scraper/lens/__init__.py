@@ -1,0 +1,1 @@
+from .fastmap import ModelMap

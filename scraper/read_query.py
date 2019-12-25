@@ -22,3 +22,9 @@ def sample_data(coordinates, model_radius=0.05):
                 filter((SearchResults.latitude-coordinates[0] < model_radius),
                         (SearchResults.longitude-coordinates[1] < model_radius)).all()
         return response
+
+
+def list_categories():
+    with get_session() as session:
+        response = session.query(Category.cat_name).all()
+    return [x[0] for x in response]

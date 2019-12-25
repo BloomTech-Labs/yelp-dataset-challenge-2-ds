@@ -9,8 +9,12 @@ from decouple import config
 import os
 import numpy as np
 import pandas as pd
+import logging
 
 from app_global import g
+
+
+scraper_url_logger = logging.getLogger(__name__)
 
 
 #########################
@@ -76,8 +80,12 @@ def clean_business_search(df: pd.DataFrame):
     temp = temp.rename(columns={'id':'business_id', 'rating': 'stars'})
     
     # change is_closed to is_open (flip bool)
-    temp['is_open'] = temp.is_closed.apply(lambda x: not x)
-    temp = temp.drop(columns='is_closed')
+    try:
+        temp['is_open'] = temp.is_closed.apply(lambda x: not x)
+        temp = temp.drop(columns='is_closed')
+    except:
+        scraper_url_logger.error('is_closed not found.  Setting to invalid = 2')
+        temp['is_open'] = 2
     
     # parse location to address, city, state, postal_code
     temp['address'] = temp.location.apply(lambda x: str(x['address1'])+str(x['address2']))
