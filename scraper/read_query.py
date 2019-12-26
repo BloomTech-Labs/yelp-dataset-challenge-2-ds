@@ -28,3 +28,20 @@ def list_categories():
     with get_session() as session:
         response = session.query(Category.cat_name).all()
     return [x[0] for x in response]
+
+
+def get_near_data(center_coord, radius):
+    # Square search.  Returns data within a box.
+    lat_range = [center_coord[0]-radius, center_coord[0]+radius]
+    lon_range = [center_coord[1]-radius, center_coord[1]+radius]
+    
+    with get_session() as session:
+        response = session.query(
+            SearchResults.latitude, SearchResults.longitude,
+            SearchResults.category, SearchResults.num_unique).\
+                filter(
+                    SearchResults.latitude > lat_range[0],
+                    SearchResults.latitude < lat_range[1],
+                    SearchResults.longitude > lon_range[0],
+                    SearchResults.longitude < lon_range[1]).all()
+    return response

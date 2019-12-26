@@ -161,7 +161,7 @@ def bootstrap_search(center_coord: tuple):
             try:
                 scraper.search()
             except:
-                scraper_logger.error('YelpAPIError: INTERNAL_ERROR.  Passing search.')
+                scraper_logger.error('YelpAPIError: INTERNAL_ERROR.  Skipping search.')
             time.sleep(np.random.randint(2,5))  # Yelp FusionAPI seems ok with rand(2,5) delay
 
 
