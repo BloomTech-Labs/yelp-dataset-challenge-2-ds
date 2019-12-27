@@ -24,10 +24,14 @@ def sample_data(coordinates, model_radius=0.05):
         return response
 
 
-def list_categories():
+def list_categories(with_id=False):
     with get_session() as session:
-        response = session.query(Category.cat_name).all()
-    return [x[0] for x in response]
+        if with_id:
+            response = session.query(Category.cat_id, Category.cat_name).all()
+            return {x[1]: x[0] for x in response}
+        else:
+            response = session.query(Category.cat_name).all()
+            return [x[0] for x in response]
 
 
 def get_near_data(center_coord, radius):

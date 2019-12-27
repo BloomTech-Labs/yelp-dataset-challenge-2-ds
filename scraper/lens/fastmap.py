@@ -160,6 +160,10 @@ def load_model(path_to_file):
     return model
 
 
+def transform_input(input_array):
+    pass
+
+
 
 
 
