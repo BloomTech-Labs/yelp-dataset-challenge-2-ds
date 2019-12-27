@@ -44,13 +44,14 @@ class ModelMap():
         model = create_network(
             network_description=get_network_description(X, y)
         )
-        train_network(model, X, y)
+        train_network(model=model, X=X, y=y, coordinates=coordinates)
         hashed_coord = encode(coordinates[0], coordinates[1])
         file_location = save_model(object_to_save=model, savename=hashed_coord)
         return {
             'geohash': hashed_coord,
             'latitude': coordinates[0],
             'longitude': coordinates[1],
+            'radius': self.model_radius,
             'observations': len(X),
             'file_location': file_location,
         }
@@ -93,8 +94,8 @@ def get_grid_coord(c_lat, c_lon, point_radius, max_radius):
     longitudes = generate_row(center=c_lon, point_radius=point_radius, max_radius=max_radius)
     
     rows = []
-    for latitude in latitudes:
-        rows += list(zip(longitudes, [latitude]*len(longitudes)))
+    for longitude in longitudes:
+        rows += list(zip(latitudes, [longitude]*len(latitudes)))
         
     return rows
 
@@ -134,7 +135,7 @@ def get_network_description(X, y):
     network_description = (
         ('input', X),  # row 0 must be input
         ('hidden_1', (X.shape[1], 4), 'simple random'),  # hidden vectors must match input vec
-        ('output', (4, 3), 'simple random'),  # Reduction of longitude/lattitude
+        ('output', (4, 1), 'simple random'),  # Reduction of longitude/lattitude
         ('target', y) # last row in description must be the target vector
     )
     return network_description
@@ -143,10 +144,9 @@ def create_network(network_description):
     neural_net = Perceptron(network_description)
     return neural_net
 
-def train_network(model, X, y, num_epochs=2000):
-    mm_logger.info('Training network at latitude: {}, longitude: {}'.\
-        format(model['latitude'], model['longitude']))
-    model['network'].fit(X, y, epochs=num_epochs)
+def train_network(model, X, y, num_epochs=2000, coordinates=None):
+    mm_logger.info('Training network at {}'.format(coordinates))
+    model.fit(X, y, epochs=num_epochs)
 
 def save_model(object_to_save, savename, root_path='/tmp/'):
     filepath = root_path+savename+'.pkl'
@@ -158,6 +158,10 @@ def load_model(path_to_file):
     with open(path_to_file, 'rb') as file:
         model = pickle.load(file)
     return model
+
+
+def transform_input(input_array):
+    pass
 
 
 

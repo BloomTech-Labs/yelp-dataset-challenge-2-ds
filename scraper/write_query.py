@@ -9,6 +9,7 @@ from models import *
 
 import logging
 
+write_logger = logging.getLogger(__name__)
 
 ########################
 ### Helper Functions ###
@@ -56,4 +57,19 @@ def write_categories(category_list):
         for category in category_list:
             session.add(Category(cat_name=category))
             session.commit()
-        
+
+
+def write_perceptron_metadata(record):
+    # Check if existing to UPDATE or INSERT
+    with get_session() as session:
+        try:
+            exists = session.query(Perceptron).filter_by(geohash=record['geohash']).scalar() is not None
+        except:
+            write_logger.info('Error in .scalar(). Multiple Found?. Exception in alchemy ret one()')
+            exists = False
+        if not exists:
+            write_logger.debug('geohash did not return existing row. Creating new business instance')
+            session.add(Perceptron(**record))
+        else:
+            session.query(Perceptron).filter_by(geohash=record['geohash']).update(record)
+        session.commit()

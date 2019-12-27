@@ -190,7 +190,7 @@ class Perceptron(LayerFactory):
         for i in range(1, len(self.layers)-1):
             self.layers[i].weights += self.layers[i-1].activated_values.T.dot(self.layers[i].delta)
 
-    def fit(self, X, y, learning_rate=1, epochs=1, verbose=False):
+    def fit(self, X, y, learning_rate=1, epochs: int=1, verbose=False):
         """
         Complete forward pass and backward pass once for each epoch
         """
