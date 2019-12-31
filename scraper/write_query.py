@@ -59,7 +59,7 @@ def write_categories(category_list):
             session.commit()
 
 
-def write_perceptron_metadata(record):
+def write_model_metadata(record):
     # Check if existing to UPDATE or INSERT
     with get_session() as session:
         try:
