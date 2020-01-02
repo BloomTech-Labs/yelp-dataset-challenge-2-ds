@@ -49,3 +49,14 @@ def get_near_data(center_coord, radius):
                     SearchResults.longitude > lon_range[0],
                     SearchResults.longitude < lon_range[1]).all()
     return response
+
+
+def dump_businesses():
+    with get_session() as session:
+        response = session.query(
+            Business.business_id, Business.name, Business.address,
+            Business.city, Business.state, Business.latitude, Business.longitude,
+            Business.postal_code, Business.review_count, Business.stars, Business.is_open,
+            Business.categories
+        ).all()
+    return response

@@ -6,12 +6,12 @@ Track and retrain models.
 Route requests for inference, maintaining models in cache.
 """
 
-import sqlite3
-from .perceptron import Perceptron
 from .geohash import decode, encode
+from .pipeline import build_pipeline
 import numpy as np
 from math import ceil
 import pickle
+import time
 
 import logging
 
@@ -19,7 +19,7 @@ mm_logger = logging.getLogger(__name__)
 
 
 class ModelMap():
-    def __init__(self, center_coord, map_radius=1, model_radius=0.05):
+    def __init__(self, center_coord, map_radius=1, model_radius=0.05, max_cache=10):
         self.radius = None  # Not Implemented (part of search_model)
         self.map = get_grid_coord(
             c_lat = center_coord[0],
@@ -31,6 +31,7 @@ class ModelMap():
         self.map_radius = map_radius
         self.model_radius = model_radius
         self.cache = {}
+        self.max_cache = max_cache
 
     def __repr__(self):
         return '<ModelMap> {} Sized Grid, {} Available'.format(
@@ -41,14 +42,13 @@ class ModelMap():
         Create model, train, and save.
         Then, save model and return record for database save
         """
-        model = create_network(
-            network_description=get_network_description(X, y)
-        )
+        model = create_network()
         train_network(model=model, X=X, y=y, coordinates=coordinates)
-        hashed_coord = encode(coordinates[0], coordinates[1])
-        file_location = save_model(object_to_save=model, savename=hashed_coord)
+        geohash = encode(coordinates[0], coordinates[1])
+        file_location = save_model(object_to_save=model, savename=geohash)
+        self.cache_model(geohash=geohash, model=model)
         return {
-            'geohash': hashed_coord,
+            'geohash': geohash,
             'latitude': coordinates[0],
             'longitude': coordinates[1],
             'radius': self.model_radius,
@@ -56,7 +56,7 @@ class ModelMap():
             'file_location': file_location,
         }
 
-    def predict(self, coordinates, bootstrap=10, **kwargs):
+    def predict(self, coordinates, **kwargs):
         # Check if model is pinned at given coordinates
         model = self.search_models(coordinates)
         if model:
@@ -66,9 +66,22 @@ class ModelMap():
             return model['network'].predict(X)
         pass
 
-    def clean_cache(self, threshold):
-        # Remove element from cache if not in use to prevent memory explosion
-        pass
+    def cache_model(self, geohash, model):
+        self.cache.update(
+            {time.time():{'model': model,
+                      'geohash': geohash
+                      }
+            }
+        )
+        self.clean_cache()
+
+    def clean_cache(self):
+        # Check current cache size and pop oldest elements
+        cache_len = len(self.cache.keys())
+        if cache_len > self.max_cache:
+            for _ in range(cache_len - self.max_cache):
+                self.cache.pop(get_oldest_cached(self.cache))
+
 
     def update_model(self, model, X, y):
         # Pass in model object including all information from the database and 
@@ -131,22 +144,16 @@ def generate_row(center, point_radius, max_radius):
 ### Model Generation and Handling ###
 #####################################
 
-def get_network_description(X, y):
-    network_description = (
-        ('input', X),  # row 0 must be input
-        ('hidden_1', (X.shape[1], 4), 'simple random'),  # hidden vectors must match input vec
-        ('output', (4, 1), 'simple random'),  # Reduction of longitude/lattitude
-        ('target', y) # last row in description must be the target vector
-    )
-    return network_description
+def create_network(*args, **kwargs):
+    network = build_pipeline()
+    return network
 
-def create_network(network_description):
-    neural_net = Perceptron(network_description)
-    return neural_net
-
-def train_network(model, X, y, num_epochs=2000, coordinates=None):
-    mm_logger.info('Training network at {}'.format(coordinates))
-    model.fit(X, y, epochs=num_epochs)
+def train_network(model, X, y, **kwargs):
+    try:
+        mm_logger.info('Training network at {}'.format(kwargs['coordinates']))
+    except:
+        mm_logger.info('Training network at unknown coordinates')
+    model.fit(X, y)
 
 def save_model(object_to_save, savename, root_path='/tmp/'):
     filepath = root_path+savename+'.pkl'
@@ -164,6 +171,16 @@ def transform_input(input_array):
     pass
 
 
+###############################
+### Helpful Logic Functions ###
+###############################
+
+def get_oldest_cached(cache):
+    """ Iterate through items in cache and get return the key of the oldest item
+            The cache is designed such that the keys are instantiation times.
+    """
+    oldest = min(cache.keys())
+    return oldest
 
 
 
