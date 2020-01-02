@@ -2,7 +2,7 @@
 Jobs Library
     Read in jobs, Fetch Job Assets, Delete Jobs
 """
-import s3
+from .s3 import Bucket
 import json
 import os
 import pandas as pd
@@ -30,7 +30,7 @@ g = g()
 
 def get_bucket(bucket_name='yelp-data-shared-labs18'):
     if g.bucket == None:
-        bucket = s3.Bucket(bucket_name)
+        bucket = Bucket(bucket_name)
         g.bucket = bucket
         return g.bucket
     return g.bucket
