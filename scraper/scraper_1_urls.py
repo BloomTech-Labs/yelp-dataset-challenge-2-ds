@@ -10,61 +10,16 @@ import os
 import numpy as np
 import pandas as pd
 import logging
+from read_query import list_categories
+from write_query import (filter_unique, write_business_search, write_search_metadata,
+                            write_categories)
+
+from yelp import get_client
 
 from app_global import g
 
 
 scraper_url_logger = logging.getLogger(__name__)
-
-
-#########################
-### Environment Setup ###
-#########################
-
-def read_credentials(filepath='.yelp/credentials'):
-    """Read credential file and return dictionary of important information"""
-    with open(filepath, 'r') as f:
-        contents = f.readlines()
-
-    credentials = {}
-    key_items = ['client_id', 'api_key']
-    for line in contents:
-        for item in key_items:
-            if item in line:
-                credentials[item] = line.split('=')[1].strip()
-
-    return credentials
-
-
-def load_environment(from_file=False):
-    """Load credentials into environment if necessary"""
-    if from_file==True:
-        credentials = read_credentials()
-        for key in credentials.keys():
-            os.environ[key] = credentials[key]
-        g.environment = True
-        print('Environment variables set.')
-    else:
-        print('Environment Loading Without Credential File Not Currently Supported.  See read_credentials.')
-        raise NotImplementedError
-
-
-##############################
-### Yelp Control Functions ###
-##############################
-
-def get_client(**kwargs):
-    if g.client == None:
-        client = YelpAPI(config('api_key'))
-        g.client = client
-        return g.client
-    return g.client
-
-
-def check_environment():
-    if hasattr(g, 'environment'):
-        return True
-    return False
 
 
 #####################
@@ -106,9 +61,6 @@ def clean_business_search(df: pd.DataFrame):
 
 
 def search(category, latitude, longitude):
-    # Check environment
-    if not check_environment():
-        load_environment(from_file=True)
     # Get client and run search
     client = get_client()
     search_results = client.search_query(
@@ -116,6 +68,50 @@ def search(category, latitude, longitude):
         )
     df = pd.DataFrame(search_results['businesses'])
     return clean_business_search(df)
+
+
+def load_categories(filename = 'categories.json'):
+    categories = pd.read_json(filename)
+    category_list = categories.query("country == 'US'").parent.unique().tolist()
+    write_categories(category_list=category_list)
+    
+
+def bootstrap_search(center_coord: tuple):
+    # Get active categories
+    categories = list_categories()
+    # Generate area map (model positions)
+    g.modelmap = lens.ModelMap(
+        center_coord = center_coord,
+        map_radius=0.5,
+        model_radius=0.1,
+    )
+    # Initialize scrapers
+    g.scrapers = []
+    for category in categories:
+        g.scrapers.append(
+            Scraper(
+                start_coord = g.modelmap.map[0],
+                radius=1,
+                category=category
+                )
+            )   
+    
+    # Run on random set of model coordinates to fill map in
+    for index in np.random.choice(len(g.modelmap.map), int(len(g.modelmap.map)/20), replace=False):
+        print('Search at {}'.format(g.modelmap.map[index]))
+        scraper_logger.info('Searching all categories at {}'.format(g.modelmap.map[index]))
+        for scraper in g.scrapers:
+            scraper.coordinates = g.modelmap.map[index]
+            try:
+                scraper.search()
+            except:
+                scraper_logger.error('YelpAPIError: INTERNAL_ERROR.  Skipping search.')
+            time.sleep(np.random.randint(2,5))  # Yelp FusionAPI seems ok with rand(2,5) delay
+
+
+
+
+
 
 
 if __name__ == "__main__":

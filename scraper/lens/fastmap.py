@@ -168,7 +168,14 @@ def load_model(path_to_file):
 
 
 def transform_input(input_array):
+    #TODO
     pass
+
+
+##############################
+### Inference (Prediction) ###
+##############################
+
 
 
 ###############################
