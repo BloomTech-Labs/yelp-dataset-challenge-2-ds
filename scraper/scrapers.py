@@ -56,7 +56,7 @@ class GeoScraper(Scraper):
         self.coord_polar['a'] = a + delta_a(a, c, expected_value)
     
     def search(self):
-        results = search(
+        results = geo_search(
             category=self.category,
             latitude=self.coordinates[0],
             longitude=self.coordinates[1]
@@ -84,10 +84,10 @@ class ListScraper(Scraper):
     """
     ListScraper
         Natively multithreaded scraper to return multiple requests given a
-        list of input URL's
+        list of search strings and appropriate search function.
     """
-    def __init__(self, url_list: list):
-        self.url_list = url_list
+    def __init__(self, search_list: list):
+        self.search_list = search_list
         super().__init__()
 
     def search(self):
@@ -132,14 +132,14 @@ def create_geo_scraper(city, radius, category, coordinates = None):
         scraper_logger.error('City or Coordinates invalid')
         raise ValueError('City and coordinates not provided')
     
-    return Scraper(
+    return GeoScraper(
         start_coord=coordinates,
         radius=radius,
         category=category
     )
 
 
-def search(category, latitude, longitude):
+def geo_search(category, latitude, longitude):
     # Get client and run search
     client = get_client()
     search_results = client.search_query(
@@ -148,4 +148,6 @@ def search(category, latitude, longitude):
     df = pd.DataFrame(search_results['businesses'])
     return clean_business_search(df)
 
+
 # ListScraper Functions #
+

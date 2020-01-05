@@ -60,3 +60,14 @@ def dump_businesses():
             Business.categories
         ).all()
     return response
+
+
+def non_reviewed_businesses():
+    with get_session() as session:
+        review_business_ids = session.query(
+            Review.business_id
+        ).distinct()
+        response = session.query(
+            Business.business_id
+        ).filter(Business.business_id.notin_(review_business_ids)).all()
+    return response
