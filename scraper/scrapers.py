@@ -3,7 +3,6 @@ Scrapers
     Scraper class objects to wrap functionality
 """
 import numpy as np
-from scraper_1_urls import search
 from write_query import (filter_unique, write_business_search, write_search_metadata,
                             write_categories)
 import lens
@@ -92,11 +91,12 @@ class ListScraper(Scraper):
         super().__init__()
 
     def search(self):
-        # query URL 
+        # query URL in working. if save successful
         pass
 
     def move():
-        # pop url, store popped temporarily
+        # pop url, store popped temporarily in working.
+        pass
 
 
 ########################
@@ -138,5 +138,14 @@ def create_geo_scraper(city, radius, category, coordinates = None):
         category=category
     )
 
+
+def search(category, latitude, longitude):
+    # Get client and run search
+    client = get_client()
+    search_results = client.search_query(
+        categories=category, latitude=latitude, longitude=longitude, limit=50
+        )
+    df = pd.DataFrame(search_results['businesses'])
+    return clean_business_search(df)
 
 # ListScraper Functions #

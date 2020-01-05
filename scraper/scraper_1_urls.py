@@ -9,12 +9,13 @@ from decouple import config
 import os
 import numpy as np
 import pandas as pd
+import time
 import logging
 from read_query import list_categories
 from write_query import (filter_unique, write_business_search, write_search_metadata,
                             write_categories)
-
 from yelp import get_client
+from scrapers import GeoScraper
 
 from app_global import g
 
@@ -59,16 +60,9 @@ def clean_business_search(df: pd.DataFrame):
     
     return temp
 
-
-def search(category, latitude, longitude):
-    # Get client and run search
-    client = get_client()
-    search_results = client.search_query(
-        categories=category, latitude=latitude, longitude=longitude, limit=50
-        )
-    df = pd.DataFrame(search_results['businesses'])
-    return clean_business_search(df)
-
+###########################
+### Bootstrap Functions ###
+###########################
 
 def load_categories(filename = 'categories.json'):
     categories = pd.read_json(filename)
@@ -89,7 +83,7 @@ def bootstrap_search(center_coord: tuple):
     g.scrapers = []
     for category in categories:
         g.scrapers.append(
-            Scraper(
+            GeoScraper(
                 start_coord = g.modelmap.map[0],
                 radius=1,
                 category=category
@@ -99,24 +93,19 @@ def bootstrap_search(center_coord: tuple):
     # Run on random set of model coordinates to fill map in
     for index in np.random.choice(len(g.modelmap.map), int(len(g.modelmap.map)/20), replace=False):
         print('Search at {}'.format(g.modelmap.map[index]))
-        scraper_logger.info('Searching all categories at {}'.format(g.modelmap.map[index]))
+        scraper_url_logger.info('Searching all categories at {}'.format(g.modelmap.map[index]))
         for scraper in g.scrapers:
             scraper.coordinates = g.modelmap.map[index]
             try:
                 scraper.search()
             except:
-                scraper_logger.error('YelpAPIError: INTERNAL_ERROR.  Skipping search.')
+                scraper_url_logger.error('YelpAPIError: INTERNAL_ERROR.  Skipping search.')
             time.sleep(np.random.randint(2,5))  # Yelp FusionAPI seems ok with rand(2,5) delay
 
 
 
 
-
-
-
 if __name__ == "__main__":
-    load_environment(from_file=True)
-
     client = get_client()
 
     response = client.search_query(term='ice cream', location='austin, tx', sort_by='rating', limit=5)
