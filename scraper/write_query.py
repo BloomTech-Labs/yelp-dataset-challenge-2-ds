@@ -73,3 +73,18 @@ def write_model_metadata(record):
         else:
             session.query(Perceptron).filter_by(geohash=record['geohash']).update(record)
         session.commit()
+
+
+def write_review(record):
+    # Check if existing to INSERT.  Temporary database will not bother with updates here.
+    #   Reviews should be unique and unchanging at this point.  May see updates on big db write.
+    with get_session() as session:
+        try:
+            exists = session.query(Review).filter_by(review_id=record['review_id']).scalar() is not None
+        except:
+            write_logger.info('Error in .scalar(). Multiple Found?. Exception in alchemy ret one()')
+            exists = False
+        if not exists:
+            write_logger.debug('Review_id did not return existing row. Creating new business instance')
+            session.add(Review(**record))
+        session.commit()

@@ -8,6 +8,10 @@ from write_query import (filter_unique, write_business_search, write_search_meta
 import lens
 from app_global import g
 
+from scraper_1_urls import geo_search
+
+from scraper_1_reviews import review_search, save_reviews
+
 import logging
 scraper_logger = logging.getLogger(__name__)
 
@@ -90,20 +94,40 @@ class ListScraper(Scraper):
         self.search_list = search_list
         super().__init__()
 
-    def search(self):
-        # query URL in working. if save successful
-        pass
+    def run(self):
+        self.working_item = self.move()  # Initialize first search item
+        while self.working_item:  # Start loop through list
+            try:
+                self.search()
+                self.complete.append(self.working_item)
+                self.working_item = self.move()
+            except:
+                self.failed.append(self.working_item)
+                self.logger.error('Search Failed on: '.foromat(self.working_item))
+        self.logger.info('List Scraper Run Complete.  {} Complete. {} Failed.'.format(
+            len(self.complete), len(self.failed)))
+        return True
 
-    def move():
+    def search(self):
+        response = review_search(self.working_item)
+        self.save(response)
+
+    def move(self):
         # pop url, store popped temporarily in working.
-        pass
+        if len(self.search_list) > 0:
+            return self.search_list.pop()
+        else:
+            return False
+
+    def save(self, reviews_to_save: list):
+        save_reviews(reviews_to_save)
 
 
 ########################
 ### Helper Functions ###
 ########################
 
-# GeoScraper Functions #
+# GeoScraper Local Functions #
 
 def calc_a_max(max_radius):
     a_max = [np.log(max_radius) / theta for theta in np.linspace(0.001, 2*np.pi, 12)]
@@ -137,16 +161,6 @@ def create_geo_scraper(city, radius, category, coordinates = None):
         radius=radius,
         category=category
     )
-
-
-def geo_search(category, latitude, longitude):
-    # Get client and run search
-    client = get_client()
-    search_results = client.search_query(
-        categories=category, latitude=latitude, longitude=longitude, limit=50
-        )
-    df = pd.DataFrame(search_results['businesses'])
-    return clean_business_search(df)
 
 
 # ListScraper Functions #

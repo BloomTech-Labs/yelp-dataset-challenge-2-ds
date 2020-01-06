@@ -70,4 +70,4 @@ def non_reviewed_businesses():
         response = session.query(
             Business.business_id
         ).filter(Business.business_id.notin_(review_business_ids)).all()
-    return response
+    return [x[0] for x in response]
