@@ -62,6 +62,15 @@ def dump_businesses():
     return response
 
 
+def dump_reviews():
+    with get_session() as session:
+        response = session.query(
+            Review.review_id, Review.date, Review.stars, Review.text,
+            Review.business_id, Review.user_id
+        ).all()
+    return response
+
+
 def non_reviewed_businesses():
     with get_session() as session:
         review_business_ids = session.query(

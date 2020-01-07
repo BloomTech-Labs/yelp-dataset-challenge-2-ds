@@ -36,6 +36,7 @@ def clean_review_response(response: dict, business_id: str):
             'review_id': review['id'],
             'date': convert_to_datetime(review['time_created']),
             'text': review['text'],
+            'stars': review['rating'],
             'user_id': review['user']['id'],
             'business_id': business_id
         })

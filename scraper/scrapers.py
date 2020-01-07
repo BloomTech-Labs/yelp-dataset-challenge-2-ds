@@ -164,4 +164,4 @@ def create_geo_scraper(city, radius, category, coordinates = None):
 
 
 # ListScraper Functions #
-
+    # Might be able to move try/accept run statement out to some extent.  Not critical yet.

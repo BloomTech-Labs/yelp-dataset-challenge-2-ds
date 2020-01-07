@@ -6,7 +6,7 @@ Export Transform
 
 import pandas as pd
 from awstools import write_data, generate_job
-from read_query import dump_businesses
+from read_query import dump_businesses, dump_reviews
 
 
 ### Base Class ###
@@ -75,4 +75,32 @@ class BusinessExport(Exporter):
             data_to_export = data
         else:
             data_to_export = self.transformed_data
-        data_to_export.to_json(orient='records',path_or_buf=filename)
+        data_to_export.to_json(orient='records', path_or_buf=filename)
+
+
+class ReviewsExport(Exporter):
+    def __init__(self):
+        super().__init__()
+    
+    def fetch(self, columns=[
+                            'review_id', 'date', 'stars', 'text', 'business_id', 'user_id'
+                            ]):
+        self.data_ = dump_reviews()
+        return pd.DataFrame(self.data_, columns=columns)
+    
+    def transform(self, data=None):
+        if data is None and self.data_:
+            self.transformed_data = self.data_
+            return self.data_
+        elif data is not None:
+            self.transformed_data = data
+            return data # Null transform returns data
+        else:
+            raise ValueError
+
+    def export(self, filename, data=None):
+        if data is not None:
+            data_to_export = data
+        else:
+            data_to_export = self.transformed_data
+        data_to_export.to_json(orient='records', path_or_buf=filename)
