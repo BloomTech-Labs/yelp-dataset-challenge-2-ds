@@ -2,7 +2,7 @@
 
 You can find the project at [https://yelpinsights.com/](https://yelpinsights.com/).
 
-The multi-visual dashboard is live at [https://yelpinsights.com/dashboard/](https://yelpinstights.com/dashboard).
+The multi-visual dashboard is live at [https://yelpinsights.com/dashboard](https://yelpinstights.com/dashboard).
 
 ## 5️⃣ Contributors
 
