@@ -6,82 +6,51 @@ The multi-visual dashboard is live at [https://yelpinsights.com/dashboard](https
 
 ## 5️⃣ Contributors
 
-|                                       [Scott Huston](https://github.com/)                                        |                                       [Nayomi Chibana](https://github.com/)                                        |                                       [Vincent Brandon](https://github.com/)                                        |                                       [Aki Evans](https://github.com/)                                        |                                       [Student 5](https://github.com/)                                        |
+|                                       [Scott Huston](https://github.com/)                                        |                                       [Nayomi Chibana](https://github.com/)                                        |                                       [Vincent Brandon](https://github.com/)                                        |                                       [Aki Evans](https://github.com/)                                        |                                       [Zach Christy](https://github.com/)                                        |
 | :-----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------: |
 |                      [<img src="https://www.dalesjewelers.com/wp-content/uploads/2018/10/placeholder-silhouette-male.png" width = "200" />](https://github.com/)                       |                      [<img src="https://www.dalesjewelers.com/wp-content/uploads/2018/10/placeholder-silhouette-female.png" width = "200" />](https://github.com/)                       |                      [<img src="https://www.dalesjewelers.com/wp-content/uploads/2018/10/placeholder-silhouette-male.png" width = "200" />](https://github.com/)                       |                      [<img src="https://www.dalesjewelers.com/wp-content/uploads/2018/10/placeholder-silhouette-female.png" width = "200" />](https://github.com/)                       |                      [<img src="https://www.dalesjewelers.com/wp-content/uploads/2018/10/placeholder-silhouette-male.png" width = "200" />](https://github.com/)                       |
 |                 [<img src="https://github.com/favicon.ico" width="15"> ](https://github.com/)                 |            [<img src="https://github.com/favicon.ico" width="15"> ](https://github.com/honda0306)             |           [<img src="https://github.com/favicon.ico" width="15"> ](https://github.com/Mister-Corn)            |          [<img src="https://github.com/favicon.ico" width="15"> ](https://github.com/NandoTheessen)           |            [<img src="https://github.com/favicon.ico" width="15"> ](https://github.com/wvandolah)             |
 | [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="15"> ](https://www.linkedin.com/) | [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="15"> ](https://www.linkedin.com/) | [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="15"> ](https://www.linkedin.com/) | [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="15"> ](https://www.linkedin.com/) | [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="15"> ](https://www.linkedin.com/) |
 
 
-🚫 5️⃣ Optional examples of using images with links for your tech stack, make sure to change these to fit your project
-
 ![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg)
 ![Typescript](https://img.shields.io/npm/types/typescript.svg?style=flat)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b5c4db1c-b10d-42c3-b157-3746edd9e81d/deploy-status)](netlify link goes in these parenthesis)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-🚫 more info on using badges [here](https://github.com/badges/shields)
-
 ## Project Overview
 
 
-1️⃣ [Trello Board](🚫add link to trello board here)
+1️⃣ [Trello Board](https://trello.com/b/cy1rcm5a/yelp-dataset-2
 
-1️⃣ [Product Canvas](🚫add link to product canvas here)
+1️⃣ [Product Canvas](https://www.notion.so/Yelp-Dataset-Challenge-2-a700a2586cc44c78944a506a2f9d46c6)
 
-🚫 Replace lorem ipsum with a description of your project
+Small Business owner wants high-fidelity competitive insights in their sector and in the social Yelp community as a whole.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-🚫  delete if front end is not applicable to your project
-
-1️⃣ [Deployed Front End](🚫add link to deployed app here)
 
 ### Tech Stack
 
-🚫 List all of the languages, frameworks, services, etc used here.
+Python
+Flask
+D3.js
+AWS
 
 ### 2️⃣ Predictions
 
-🚫 Describe your models here
-
-### 2️⃣ Explanatory Variables
-
--   Explanatory Variable 1
--   Explanatory Variable 2
--   Explanatory Variable 3
--   Explanatory Variable 4
--   Explanatory Variable 5
-
-### Data Sources
-🚫  Add to or delete souce links as needed for your project
-
-
--   [Source 1] (🚫add link to python notebook here)
--   [Source 2] (🚫add link to python notebook here)
--   [Source 3] (🚫add link to python notebook here)
--   [Source 4] (🚫add link to python notebook here)
--   [Source 5] (🚫add link to python notebook here)
-
-### Python Notebooks
-
-🚫  Add to or delete python notebook links as needed for your project
-
-[Python Notebook 1](🚫add link to python notebook here)
-
-[Python Notebook 2](🚫add link to python notebook here)
-
-[Python Notebook 3](🚫add link to python notebook here)
-
-### 3️⃣ How to connect to the web API
-
-🚫 List directions on how to connect to the API here
+- Research methods to compare across aggregate bodies.
+    - Default aggregation level for searches with little granularity (Give national stats if no city data available for example)
+    - Aggregate Statistic Generation
+    - Develop ranking algorithm (composite indices of business in segement/aggregation-level) [https://www.istat.it/it/files/2013/12/Rivista2013_Mazziotta_Pareto.pdf](https://www.istat.it/it/files/2013/12/Rivista2013_Mazziotta_Pareto.pdf)
+- Implement sentiment analyzer (TextBlob)(done)
+- Scraping Module
+    - For existing.  Wrap in format/write stream.
+- Database operations optimization (query specific)
 
 ### 3️⃣ How to connect to the data API
 
-🚫 List directions on how to connect to the API here
+Direct access to database API available at: [Heroku-Staging](https://db-api-yelp18-staging.herokuapp.com/)
+
+See splash page for rendering of readme.
 
 ## Contributing
 
