@@ -55,7 +55,13 @@ class GeoScraper(Scraper):
         def delta_a(a, expected_value, c):
             return c * a * (50-expected_value)/expected_value
         
-        expected_value = predict_capture()
+        expected_value = predict_capture(
+                            points_along_path(
+                                path='sprial',
+                                d_theta=d_theta, 
+                                a=self.coord_polar['a'],
+                                theta=self.coord_polar['theta'])
+                            )
         a = self.coord_polar['a']
         self.coord_polar['a'] = a + delta_a(a, c, expected_value)
     
@@ -161,6 +167,13 @@ def create_geo_scraper(city, radius, category, coordinates = None):
         radius=radius,
         category=category
     )
+
+def points_along_path(steps=12, **kwargs):
+    # Spiral conversion
+    # Convert rotation to steps of lon, lat
+
+def predict_capture():
+    pass
 
 
 # ListScraper Functions #

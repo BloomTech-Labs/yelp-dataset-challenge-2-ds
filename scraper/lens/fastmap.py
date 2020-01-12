@@ -167,14 +167,14 @@ def load_model(path_to_file):
     return model
 
 
-def transform_input(input_array):
-    #TODO
-    pass
-
 
 ##############################
 ### Inference (Prediction) ###
 ##############################
+
+def transform_input(input_array):
+    #TODO
+    pass
 
 
 
@@ -192,29 +192,4 @@ def get_oldest_cached(cache):
 
 
 if __name__ == "__main__":
-    # Test with n observations of each category.
-    # In practice, these will be imputed values or values from nearby locations
-    X=np.array([[0,1,2], [3,2,5], [6,7,8], [9, 10, 11]])
-    y=np.array([0.5,0.65,1])
-    description = get_network_description(
-        X=X,
-        y=y
-    )
-    netA = create_network(network_description=description)
-
-    train_network(netA, X, y)
-
-    print("averaging values from final nodes")
-    print(np.mean(netA.feed_forward(X), axis=0))
-
-    print("pickling test model")
-    with open('/tmp/netA.pkl', 'wb') as file:
-        pickle.dump(netA, file)
-
-    print("loading model")
-    with open('/tmp/netA.pkl', 'rb') as file:
-        netB = pickle.load(file)
-
-    print('Forward pass with loaded model')
-    print(netB.feed_forward(X))
-
+    pass
