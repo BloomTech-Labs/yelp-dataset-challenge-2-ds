@@ -85,7 +85,7 @@ log_path = os.path.join(os.getcwd(), 'debug.log')
 logging.basicConfig(filename=log_path, level=logging.INFO)
 
 ###---------Master Ranking Object---------###
-class Ratings(object):
+class Rankings(object):
     """
     An analytical wrapper that manages access to the data and wraps various
     statistical functions for easy and quick evaluation.
@@ -111,16 +111,17 @@ class Ratings(object):
 
         ## Getting bayesian estimates for components ##
         
-        # check if number of reviews we have = at least 70% of total reviews
+        # check if number of reviews we have = number of total reviews
         # we may have fewer reviews due to not scraping all reviews
-        if self.business_df.review_count.iloc[0]*.7 <= (len(self.review_df)+1):    
+        if self.business_df.review_count.iloc[0] == len(self.review_df):    
             # if we have all of the reviews, estimate based on actual review ratings 
-            self.star_estimate = self.get_dirichlet_estimate()
+            self.dirichlet_estimate = self.get_dirichlet_estimate()
         else:
             # otherwise, estimate based on overall averaged star ratings
-            self.star_prior = (self.dirichlet_prior*self.dirichlet_prior.index).sum()/25
-            self.star_confidence = 25
-            self.star_estimate = self.get_star_estimate_bayesian_mean()
+            self.dirichlet_prior = (self.dirichlet_prior*self.dirichlet_prior.index).mean()
+            self.diichlet_confidence = 25
+            # TODO
+            self.dirichlet_estimate = self.get_star_estimate_bayesian_mean()
 
         self.review_sentiment_estimate = self.get_review_sentiment_estimate()
         self.tip_sentiment_estimate = self.get_tip_sentiment_estimate()
@@ -167,9 +168,9 @@ class Ratings(object):
         """
         Computes the Bayesian mean from the prior and confidence.
         """
-        return (self.star_confidence * self.star_prior + \
+        return (self.dirichlet_confidence * self.dirichlet_prior + \
             self.business_df.stars.iloc[0] * self.business_df.review_count.iloc[0]) \
-             / (self.star_confidence + self.business_df.review_count.iloc[0])
+             / (self.dirichlet_confidence + self.business_df.review_count.iloc[0])
     
     def dirichlet_mean(self, arr):
         """
@@ -184,15 +185,12 @@ class Ratings(object):
         return float(sum(weights)) / N
 
     def get_review_sentiment_estimate(self):
-        # returns bayesian estimate for review sentiment
         return self.review_df['weighted_polarity'].agg(self.review_sentiment_bayesian_mean)
 
     def get_tip_sentiment_estimate(self):
-        # returns bayesian estimate for tip sentiment
         return self.tip_df['weighted_polarity'].agg(self.tip_sentiment_bayesian_mean)
 
     def get_dirichlet_estimate(self):
-        # returns bayesian estimate for star rating based on review ratings
         return self.review_df['stars'].agg(self.dirichlet_mean)
     
     def get_comparison_ids(self):
@@ -221,8 +219,7 @@ class Ratings(object):
         return comparison_ids
 
     def get_comparison_dfs(self):
-        # returns DataFrames for reviews and tips of businesses
-        # in the comparison group
+
         comparison_ids = self.comparison_ids
         try:
             with get_session() as session:
@@ -253,8 +250,7 @@ class Ratings(object):
             return comparison_review_df, comparison_tip_df
 
     def get_business_data(self):
-        # Returns DataFrames with business info, reviews, and tips
-        # for the business being rated
+
         try:
             with get_session() as session:
                 
@@ -287,15 +283,12 @@ class Ratings(object):
         
         except SQLAlchemyError as e:
             main_logger.exception(str(e.__dict__['orig']))
-            business_df, review_df, tip_df = self.get_business_data()
+            review_df, tip_df = self.get_business_data()
         
         finally:
             return business_df, review_df, tip_df
     
     def get_dirichlet_prior(self):
-        # returns distribution of fractional ratings equivalent to 
-        # 25 ratings with the same distribution as the reviews for 
-        # comparison businesses
         value_counts = self.comparison_review_df.stars.value_counts()
         value_counts = value_counts.sort_index()
         distribution = value_counts/value_counts.sum()
@@ -303,26 +296,20 @@ class Ratings(object):
         return dirichlet_prior
 
     def get_review_prior(self):
-        # mean of weighted review sentiment for comparison business
         mean = self.comparison_review_df.weighted_polarity.mean()
         confidence = 25
         return mean, confidence
 
     def get_tip_prior(self):
-        # mean of weighted tip sentiment
         mean = self.comparison_tip_df.weighted_polarity.mean()
         confidence = 10
         return mean, confidence
 
     def weight_review_polarity(self, df):
-        # multiplies review polarity by 
-        # (number of people who voted that review as useful + 1)
         df['weighted_polarity'] = (df.useful+1)*df.polarity
         return df
 
     def weight_tip_polarity(self, df):
-        # multiplies tip polarity by 
-        # (number of people who complimented that tip + 1)
         df['weighted_polarity'] = (df.compliment_count+1)*df.polarity
         return df
 
@@ -343,7 +330,7 @@ class Ratings(object):
         # adding business data at the end of each series
         comp_r_polarity = comp_r_polarity.append(pd.Series(self.review_sentiment_estimate))
         comp_t_polarity = comp_t_polarity.append(pd.Series(self.tip_sentiment_estimate))
-        comp_stars_estimates = comp_stars_estimates.append(pd.Series(self.star_estimate))
+        comp_stars_estimates = comp_stars_estimates.append(pd.Series(self.dirichlet_estimate))
 
         ## getting z score ##
         # returned array-like so taking the last element 

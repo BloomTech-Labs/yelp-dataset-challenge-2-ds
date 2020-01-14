@@ -128,3 +128,18 @@ class TipSentiment(Base):
     tip_id = Column(String, ForeignKey('tips.tip_id'))
     polarity = Column(Float)
     subjectivity = Column(Float)
+
+
+class Viz2(Base):
+    __tablename__ = 'viz2'
+
+    vz_id = Column(Integer, primary_key=True)
+    business_id = Column(String, ForeignKey('businesses.business_id'))
+    categories = Column(String)
+    percentile = Column(Float)
+    competitors = Column(Text)
+    bestinsector = Column(Text)
+    avg_stars_over_time = Column(Text)
+    chunk_sentiment = Column(Text)
+    count_by_star = Column(Text)
+    review_by_year = Column(Text)
