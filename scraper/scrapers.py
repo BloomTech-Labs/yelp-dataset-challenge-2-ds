@@ -54,14 +54,6 @@ class GeoScraper(Scraper):
         # Calculate expected value for d_theta and adjust curvature
         def delta_a(a, expected_value, c):
             return c * a * (50-expected_value)/expected_value
-        
-        expected_value = predict_capture(
-                            points_along_path(
-                                path='sprial',
-                                d_theta=d_theta, 
-                                a=self.coord_polar['a'],
-                                theta=self.coord_polar['theta'])
-                            )
         a = self.coord_polar['a']
         self.coord_polar['a'] = a + delta_a(a, c, expected_value)
     
