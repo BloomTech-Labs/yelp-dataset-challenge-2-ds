@@ -6,6 +6,7 @@ import numpy as np
 from write_query import (filter_unique, write_business_search, write_search_metadata,
                             write_categories)
 import lens
+from paths import SpiralPath
 from app_global import g
 
 from scraper_1_urls import geo_search
@@ -42,8 +43,7 @@ class GeoScraper(Scraper):
         self.coordinates = start_coord
         self.max_radius = radius
         self.category = category
-        # Formula terms
-        self.coord_polar = {'r':0, 'theta':0, 'a':calc_a_max(radius)}
+        self.path = SpiralPath(center_coord=start_coord, max_radius=radius)
         super().__init__()
 
     def run(self):
