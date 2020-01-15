@@ -6,7 +6,7 @@ Path Classes
 """
 
 import numpy as np 
-
+from functools import partial
 
 class Path():
     def __init__(self, step_size, start_coord):
@@ -21,7 +21,7 @@ class Path():
         NotImplemented
 
     def calc_path_len(self):
-        NotImplemented
+        raise NotImplementedError
 
     def convert_latlong(self):
         NotImplemented
@@ -35,34 +35,36 @@ class SpiralPath(Path):
     Logistic Sprial Path
     r = e^(-a*theta)
     """
-    def __init__(self, center_coord=[0,0], step_size=np.pi/12, a=0.05, max_radius=1):
+    def __init__(self, center_coord=[0,0], step_size=np.pi/12, a=0.025, max_radius=1):
         self.theta = 0
         self.a = a
         self.center_coord = center_coord
-        self.coord = self.convert_latlong(theta=self.theta, a=a)
         self.max_radius = max_radius
-
+        self.coord = self.convert_latlong(theta=self.theta, a=a)
+        
         super().__init__(step_size=step_size, start_coord=center_coord)
 
     def move(self, d_theta=None, c=0.025, step=1, **kwargs):
         magnitude = kwargs['magnitude']
         # Calculate expected value for d_theta and adjust curvature
-        def delta_a(a, magnitude, c):
-            return c * a * magnitude
+        def delta_a(a, c, magnitude):
+            return (c * a  * (1-magnitude))**2
 
-        self.a = self.a + delta_a(self.a, c, magnitude)
+        self.a = self.a + delta_a(a=self.a, c=c, magnitude=magnitude)
         self.theta += d_theta
+        self.get_coords()
         if self.check_max():
-            return self.get_coords()
+            return self.coord
         return None  # Explicity set to None if past the end of path
 
-    def sample_path(self):
-        # theta
-        pass
+    def sample_path(self, d_theta=np.pi/4, steps=10):
+        theta_list = np.linspace(self.theta, self.theta+d_theta, steps)
+        partial_conversion = partial(self.convert_latlong, a=self.a)
+        return list(map(partial_conversion, theta_list))
 
     def convert_latlong(self, theta, a):
-        r = np.exp(-a*theta)
-        self.r_ = r  # Store for max radius check
+        r = np.exp(a*theta) * self.max_radius
+        self.r_ = r
         lat = r * np.sin(theta) + self.center_coord[0]
         lon = r * np.cos(theta) + self.center_coord[1]
         return(lat,lon)

@@ -32,6 +32,8 @@ class Scraper():
         NotImplemented
     def save(self):
         NotImplemented
+    def stop(self):
+        NotImplemented
 
 
 class GeoScraper(Scraper):
@@ -39,23 +41,27 @@ class GeoScraper(Scraper):
     GeoScraper
         Geographically aware scraper implementing Lens for smart pathing
     """
-    def __init__(self, start_coord, radius, category):
+    def __init__(self, start_coord, radius, category, expected_max=50):
         self.coordinates = start_coord
         self.max_radius = radius
         self.category = category
         self.path = SpiralPath(center_coord=start_coord, max_radius=radius)
+        self.stopping_param = 0
+        self.stopped=False
+        self.expected_max = expected_max
         super().__init__()
 
     def run(self):
         # Loop through hops until the end of path is reached
+        while not self.stopped:
+            continue # search, move, search,.
         pass
 
     def move(self, d_theta=np.pi/12, c=0.025):
         # Calculate expected value for d_theta and adjust curvature
-        def delta_a(a, expected_value, c):
-            return c * a * (50-expected_value)/expected_value
-        a = self.coord_polar['a']
-        self.coord_polar['a'] = a + delta_a(a, c, expected_value)
+        magnitude = modelmap.predict_capture()/self.expected_max
+        # TODO: The path parameters can be set with general params instead of explicitly with a little work.
+        self.coordinates = selp.path.move(d_theta=d_theta, c=c, magnitude=magnitude)
     
     def search(self):
         results = geo_search(
@@ -80,6 +86,14 @@ class GeoScraper(Scraper):
             'num_unique': len(unique_results),
         }
         write_search_metadata(record=search_record)
+        self.stop(num_unique=len(unique_results))
+
+    def stop(self, *args, **kwargs):
+        if kwargs['num_unique'] == 0:
+            self.stopping_param += 1
+
+        if self.stopping_param > 5:
+            self.stopped=True
 
 
 class ListScraper(Scraper):
