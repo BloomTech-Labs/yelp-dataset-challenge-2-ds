@@ -5,7 +5,7 @@ Scrapers
 import numpy as np
 from write_query import (filter_unique, write_business_search, write_search_metadata,
                             write_categories)
-import lens
+from lens import ModelMap
 from paths import SpiralPath
 from app_global import g
 
@@ -41,13 +41,14 @@ class GeoScraper(Scraper):
     GeoScraper
         Geographically aware scraper implementing Lens for smart pathing
     """
-    def __init__(self, start_coord, radius, category, expected_max=50):
+    def __init__(self, start_coord, radius, category, lens, expected_max=50):
         self.coordinates = start_coord
         self.max_radius = radius
         self.category = category
         self.path = SpiralPath(center_coord=start_coord, max_radius=radius)
         self.stopping_param = 0
         self.stopped=False
+        self.lens = lens  # ModelMap
         self.expected_max = expected_max
         super().__init__()
 
@@ -59,9 +60,12 @@ class GeoScraper(Scraper):
 
     def move(self, d_theta=np.pi/12, c=0.025):
         # Calculate expected value for d_theta and adjust curvature
-        magnitude = modelmap.predict_capture()/self.expected_max
+        # TODO: Same issue as below.  Passing explicit keywords won't translate 
+        #  Between paths.
+        prediction = predict_capture(points=self.path.sample_path(d_theta=d_theta), lens=self.lens)
+        magnitude = prediction/self.expected_max
         # TODO: The path parameters can be set with general params instead of explicitly with a little work.
-        self.coordinates = selp.path.move(d_theta=d_theta, c=c, magnitude=magnitude)
+        self.coordinates = self.path.move(d_theta=d_theta, c=c, magnitude=magnitude)
     
     def search(self):
         results = geo_search(
@@ -168,18 +172,18 @@ def create_geo_scraper(city, radius, category, coordinates = None):
         scraper_logger.error('City or Coordinates invalid')
         raise ValueError('City and coordinates not provided')
     
+    lens = ModelMap(center_coord=coordinates)
+
     return GeoScraper(
         start_coord=coordinates,
         radius=radius,
-        category=category
+        category=category,
+        lens=lens,
     )
 
-def points_along_path(steps=12, **kwargs):
-    # Spiral conversion
-    # Convert rotation to steps of lon, lat
 
-def predict_capture():
-    pass
+def predict_capture(points, lens):
+    return
 
 
 # ListScraper Functions #

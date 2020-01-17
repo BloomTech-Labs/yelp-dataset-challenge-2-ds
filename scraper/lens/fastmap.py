@@ -8,6 +8,7 @@ Route requests for inference, maintaining models in cache.
 
 from .geohash import decode, encode
 from .pipeline import build_pipeline
+from read_query import sample_data
 import numpy as np
 from math import ceil
 import pickle
@@ -59,7 +60,7 @@ class ModelMap():
     def predict(self, coordinates, **kwargs):
         # Check if model is pinned at given coordinates
         model = self.search_models(coordinates)
-        if model:
+        if model is not None:
             X, y = sample_data(coordinates, self.model_radius)
             if model['observations'] < X:
                 self.update_model(model['network'], X, y)
@@ -167,20 +168,19 @@ def load_model(path_to_file):
     return model
 
 
-
-##############################
-### Inference (Prediction) ###
-##############################
+#########################
+### Inference Helpers ###
+#########################
 
 def transform_input(input_array):
-    #TODO
+    #TODO: Currently handled by pipeline.  Checks?
     pass
 
 
 
-###############################
-### Helpful Logic Functions ###
-###############################
+##############################
+### Caching LogicFunctions ###
+##############################
 
 def get_oldest_cached(cache):
     """ Iterate through items in cache and get return the key of the oldest item
