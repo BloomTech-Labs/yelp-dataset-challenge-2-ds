@@ -7,8 +7,8 @@ Route requests for inference, maintaining models in cache.
 """
 
 from .geohash import decode, encode
-from .pipeline import build_pipeline
-from read_query import sample_data
+from .pipeline import build_pipeline, split_widen_data
+from read_query import get_near_data
 import numpy as np
 from math import ceil
 import pickle
@@ -61,7 +61,9 @@ class ModelMap():
         # Check if model is pinned at given coordinates
         model = self.search_models(coordinates)
         if model is not None:
-            X, y = sample_data(coordinates, self.model_radius)
+            X, y = split_widen_data(
+                get_near_data(coordinates, self.model_radius)
+            ) 
             if model['observations'] < X:
                 self.update_model(model['network'], X, y)
             return model['network'].predict(X)

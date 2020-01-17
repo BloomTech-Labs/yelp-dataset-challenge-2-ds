@@ -11,7 +11,6 @@ from functools import partial
 class Path():
     def __init__(self, step_size, start_coord):
         self.step_size = step_size
-        self.path_len = self.calc_path_len()
         self.start_coord = start_coord
 
     def move(self):
@@ -19,9 +18,6 @@ class Path():
 
     def sample(self, **kwargs):
         NotImplemented
-
-    def calc_path_len(self):
-        raise NotImplementedError
 
     def convert_latlong(self):
         NotImplemented

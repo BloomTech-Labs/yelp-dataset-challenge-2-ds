@@ -55,19 +55,21 @@ class GeoScraper(Scraper):
     def run(self):
         # Loop through hops until the end of path is reached
         while not self.stopped:
-            continue # search, move, search,.
-        pass
+            self.search()
+            self.move()
+        print('Complete!')
 
     def move(self, d_theta=np.pi/12, c=0.025):
         # Calculate expected value for d_theta and adjust curvature
         # TODO: Same issue as below.  Passing explicit keywords won't translate 
-        #  Between paths.
+        #   Between paths.
         prediction = predict_capture(points=self.path.sample_path(d_theta=d_theta), lens=self.lens)
         magnitude = prediction/self.expected_max
         # TODO: The path parameters can be set with general params instead of explicitly with a little work.
         self.coordinates = self.path.move(d_theta=d_theta, c=c, magnitude=magnitude)
     
     def search(self):
+        print('debug: scraper is searching!')
         results = geo_search(
             category=self.category,
             latitude=self.coordinates[0],
@@ -77,7 +79,7 @@ class GeoScraper(Scraper):
         self.save(
             unique_results=unique_results,
         )
-        # self.move()
+        self.move()
 
     def save(self, unique_results):
         # Save new businesses
@@ -161,7 +163,7 @@ def get_decimal_from_polar(center_coord, r, theta, a):
     return (center_coord[0]+offset[0], center_coord[1]+offset[1])
 
 
-def create_geo_scraper(city, radius, category, coordinates = None):
+def create_geo_scraper(radius, category, coordinates=None, city=None):
     """
     Create a geographic yelp scraper for businesses. 
     """
@@ -183,7 +185,10 @@ def create_geo_scraper(city, radius, category, coordinates = None):
 
 
 def predict_capture(points, lens):
-    return
+    values = list(
+        map(lens.predict, points)
+    )
+    return sum(values) / len(values)  # Simple average
 
 
 # ListScraper Functions #
